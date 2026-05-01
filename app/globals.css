@@ -168,6 +168,17 @@ a:hover {
   border-color: rgba(138, 43, 226, 0.3);
 }
 
+.points-display-link {
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.points-display-link:hover .points-display {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: rgba(0, 229, 255, 0.4);
+  transform: translateY(-1px);
+}
+
 .points-display {
   display: flex;
   align-items: center;
@@ -634,6 +645,21 @@ a:hover {
   background: rgba(255, 255, 255, 0.08) !important;
   border-color: var(--accent-primary) !important;
   box-shadow: 0 4px 15px rgba(138, 43, 226, 0.1);
+}
+
+.points-display-link {
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.points-display-link:hover {
+  transform: scale(1.05);
+}
+
+.points-display-link:hover .points-display {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
 }
 
 /* ===== LEADERBOARD ===== */

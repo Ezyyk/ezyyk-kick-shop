@@ -74,10 +74,12 @@ export default function Header() {
               </Button>
             </Link>
 
-            <div className="points-display">
-              <Gem size={18} />
-              <span>{points}</span> bodů
-            </div>
+            <Link href="/#how-to-get-points" className="points-display-link">
+              <div className="points-display">
+                <Gem size={18} />
+                <span>{points}</span> bodů
+              </div>
+            </Link>
             
             <Link 
               href="/profile" 

@@ -50,7 +50,7 @@ export default function Home() {
         </section>
 
         {/* HOW TO GET POINTS TUTORIAL */}
-        <section style={{ width: "100%", marginTop: "4rem" }}>
+        <section id="how-to-get-points" style={{ width: "100%", marginTop: "4rem", scrollMarginTop: "100px" }}>
           <h2 style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
             <Info size={24} color="var(--accent-primary)" /> Jak získávat body?
           </h2>
