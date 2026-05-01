@@ -81,9 +81,17 @@ export async function getDb() {
       cost INTEGER NOT NULL,
       image_url TEXT,
       category TEXT DEFAULT 'other',
+      stock INTEGER DEFAULT -1,
       created_at DATETIME DEFAULT (datetime('now'))
     );
   `);
+
+  // Migration for existing table
+  try {
+    await wrapper.exec('ALTER TABLE shop_items ADD COLUMN stock INTEGER DEFAULT -1');
+  } catch (e) {
+    // Column already exists, ignore error
+  }
 
   await wrapper.exec(`
     CREATE TABLE IF NOT EXISTS giveaways (
@@ -278,20 +286,31 @@ export async function getShopItems() {
   return await db.all('SELECT * FROM shop_items ORDER BY created_at DESC');
 }
 
-export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string) {
+export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1) {
   const db = await getDb();
   await db.run(
-    'INSERT INTO shop_items (id, title, description, cost, image_url, category) VALUES (?, ?, ?, ?, ?, ?)',
-    id, title, description, cost, imageUrl, category
+    'INSERT INTO shop_items (id, title, description, cost, image_url, category, stock) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    id, title, description, cost, imageUrl, category, stock
   );
 }
 
-export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string) {
+export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1) {
   const db = await getDb();
   await db.run(
-    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ? WHERE id = ?',
-    title, description, cost, imageUrl, category, id
+    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ?, stock = ? WHERE id = ?',
+    title, description, cost, imageUrl, category, stock, id
   );
+}
+
+export async function decrementStock(id: string) {
+  const db = await getDb();
+  // Jen pokud není neomezený (-1)
+  const item = await db.get('SELECT stock FROM shop_items WHERE id = ?', id);
+  if (item && item.stock > 0) {
+    await db.run('UPDATE shop_items SET stock = stock - 1 WHERE id = ?', id);
+    return true;
+  }
+  return item && item.stock === -1;
 }
 
 export async function deleteShopItem(id: string) {

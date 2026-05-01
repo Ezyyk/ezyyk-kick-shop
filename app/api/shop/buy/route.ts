@@ -26,12 +26,28 @@ export async function POST(req: Request) {
   if (!itemId || !cost) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
+
+  // Check stock
+  const { decrementStock, getDb } = await import("@/lib/db");
+  const dbInstance = await getDb();
+  const item = await dbInstance.get('SELECT stock FROM shop_items WHERE id = ?', itemId);
+  
+  if (!item) {
+    return NextResponse.json({ error: "Item not found" }, { status: 404 });
+  }
+
+  if (item.stock === 0) {
+    return NextResponse.json({ error: "Tato položka je již vyprodána!" }, { status: 400 });
+  }
   
   const success = await spendPoints(user.id, cost);
   
   if (!success) {
     return NextResponse.json({ error: "Not enough points" }, { status: 400 });
   }
+
+  // Decrement stock if success
+  await decrementStock(itemId);
   
   const updatedUser = await getUserByName(userName);
   

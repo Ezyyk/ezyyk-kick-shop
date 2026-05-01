@@ -10,19 +10,21 @@ interface ShopItemProps {
   cost: number;
   userPoints: number;
   imageUrl?: string;
+  stock?: number;
   onBuy: (id: string, cost: number) => void;
 }
 
-export default function ShopItem({ id, title, description, cost, userPoints, imageUrl, onBuy }: ShopItemProps) {
+export default function ShopItem({ id, title, description, cost, userPoints, imageUrl, stock = -1, onBuy }: ShopItemProps) {
   const canAfford = userPoints >= cost;
+  const isSoldOut = stock === 0;
 
   return (
     <div className={`glass-panel ${styles.item}`}>
       <h3 className={styles.title}>{title}</h3>
       
       {imageUrl ? (
-        <div className={styles.imageWrapper} style={{ aspectRatio: "1 / 1", width: "100%", height: "auto" }}>
-          <img src={imageUrl} alt={title} className={styles.image} style={{ width: "100%", height: "100%", objectFit: "fill", aspectRatio: "1 / 1" }} />
+        <div className={styles.imageWrapper}>
+          <img src={imageUrl} alt={title} className={styles.image} />
         </div>
       ) : (
         <div className={styles.imagePlaceholder}>
@@ -33,16 +35,16 @@ export default function ShopItem({ id, title, description, cost, userPoints, ima
       <p className={styles.description}>{description}</p>
       
       <div className={styles.cost}>
-        <Gem size={18} color="#00e5ff" /> {cost}
+        <Gem size={18} color="#00e5ff" /> {cost} {stock !== -1 && <span className={styles.stock}>({stock} ks)</span>}
       </div>
       
       <Button 
         onClick={() => onBuy(id, cost)} 
-        disabled={!canAfford}
-        variant={canAfford ? "primary" : "disabled"}
+        disabled={!canAfford || isSoldOut}
+        variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
         style={{ width: "100%", marginTop: "auto" }}
       >
-        {canAfford ? "Koupit" : "Nedostatek bodů"}
+        {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
       </Button>
     </div>
   );

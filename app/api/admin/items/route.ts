@@ -25,14 +25,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const { id, title, description, cost, imageUrl, category } = await req.json();
+  const { id, title, description, cost, imageUrl, category, stock } = await req.json();
   
   if (!id || !title || cost === undefined || cost === null) {
     return NextResponse.json({ error: "Chybí povinná pole (id, title, cost)" }, { status: 400 });
   }
   
   try {
-    await createShopItem(id, title, description || "", cost, imageUrl || "", category || "other");
+    await createShopItem(id, title, description || "", cost, imageUrl || "", category || "other", stock !== undefined ? stock : -1);
     const items = await getShopItems();
     return NextResponse.json({ success: true, items });
   } catch (e: any) {
@@ -64,7 +64,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const { id, title, description, cost, imageUrl, category } = await req.json();
+  const { id, title, description, cost, imageUrl, category, stock } = await req.json();
   
   if (!id || !title || cost === undefined || cost === null) {
     return NextResponse.json({ error: "Chybí povinná pole (id, title, cost)" }, { status: 400 });
@@ -72,7 +72,7 @@ export async function PUT(req: Request) {
   
   try {
     const { updateShopItem } = await import("@/lib/db");
-    await updateShopItem(id, title, description || "", cost, imageUrl || "", category || "other");
+    await updateShopItem(id, title, description || "", cost, imageUrl || "", category || "other", stock !== undefined ? stock : -1);
     const items = await getShopItems();
     return NextResponse.json({ success: true, items });
   } catch (e: any) {

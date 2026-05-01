@@ -32,6 +32,7 @@ interface ShopItem {
   cost: number;
   image_url: string;
   category: string;
+  stock: number;
 }
 
 interface AdminGiveaway {
@@ -63,7 +64,7 @@ export default function AdminPage() {
   const [giveaways, setGiveaways] = useState<AdminGiveaway[]>([]);
 
   // New / Edit item form
-  const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other" });
+  const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
   const [showForm, setShowForm] = useState(false);
   const [isEditingItem, setIsEditingItem] = useState(false);
 
@@ -155,7 +156,7 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json();
         setShopItems(data.items);
-        setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other" });
+        setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
         setShowForm(false);
         setIsEditingItem(false);
       } else {
@@ -175,7 +176,8 @@ export default function AdminPage() {
       description: item.description || "",
       cost: item.cost,
       imageUrl: item.image_url || "",
-      category: item.category || "other"
+      category: item.category || "other",
+      stock: item.stock ?? -1
     });
     setIsEditingItem(true);
     setShowForm(true);
@@ -461,7 +463,7 @@ export default function AdminPage() {
               <h3>Vlastní itemy</h3>
               <button className="admin-btn admin-btn-primary" onClick={() => {
                 if (!showForm) {
-                  setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other" });
+                  setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
                   setIsEditingItem(false);
                 }
                 setShowForm(!showForm);
@@ -521,6 +523,28 @@ export default function AdminPage() {
                       <option value="other">Ostatní</option>
                     </select>
                   </div>
+                  <div className="admin-form-group">
+                    <label>Množství (Sklad)</label>
+                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                      <input
+                        type="number"
+                        placeholder="Počet kusů"
+                        disabled={newItem.stock === -1}
+                        value={newItem.stock === -1 ? "" : newItem.stock}
+                        onChange={(e) => setNewItem({ ...newItem, stock: parseInt(e.target.value) || 0 })}
+                        className="admin-input"
+                        style={{ flex: 1 }}
+                      />
+                      <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.85rem", cursor: "pointer", whiteSpace: "nowrap" }}>
+                        <input 
+                          type="checkbox" 
+                          checked={newItem.stock === -1} 
+                          onChange={(e) => setNewItem({ ...newItem, stock: e.target.checked ? -1 : 10 })}
+                        />
+                        Neomezeno
+                      </label>
+                    </div>
+                  </div>
                   <div className="admin-form-group admin-form-wide">
                     <label>Popis</label>
                     <input
@@ -563,6 +587,9 @@ export default function AdminPage() {
                       <div className="admin-item-meta">
                         <span className="admin-item-cost">{item.cost.toLocaleString()} bodů</span>
                         <span className="admin-item-category">{item.category}</span>
+                        <span className="admin-item-stock" style={{ color: item.stock === 0 ? "#ff4444" : (item.stock === -1 ? "#00e5ff" : "#fff") }}>
+                          {item.stock === -1 ? "Neomezeno" : `Sklad: ${item.stock} ks`}
+                        </span>
                       </div>
                     </div>
                     <div className="admin-item-actions" style={{ display: "flex", gap: "0.5rem", position: "absolute", top: "1rem", right: "1rem" }}>

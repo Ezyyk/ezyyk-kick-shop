@@ -139,6 +139,7 @@ export default function ShopPage() {
                     cost={item.cost}
                     userPoints={points}
                     imageUrl={item.image_url}
+                    stock={item.stock}
                     onBuy={handleBuy}
                   />
                 ))}
