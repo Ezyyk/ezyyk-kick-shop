@@ -1,7 +1,7 @@
 "use client";
 import "./admin.css";
 import React, { useState, useEffect } from "react";
-import { Lock, Users, ShoppingCart, Package, Trash2, Plus, ExternalLink, ArrowLeft, Search, Edit3, Save, X, Gift, Trophy, Ticket } from "lucide-react";
+import { Lock, Users, ShoppingCart, Package, Trash2, Plus, ExternalLink, ArrowLeft, Search, Edit3, Save, X, Gift, Trophy, Ticket, MessageSquare } from "lucide-react";
 import ImageUploader from "@/components/ImageUploader";
 
 interface User {
