@@ -207,11 +207,26 @@ a:hover {
 .hero-title {
   font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(to right, #fff, var(--accent-secondary));
+  background: linear-gradient(
+    110deg,
+    #fff 30%,
+    rgba(255, 255, 255, 0.4) 45%,
+    #fff 50%,
+    rgba(255, 255, 255, 0.4) 55%,
+    #fff 70%
+  );
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
+  animation: glint 4s linear infinite;
+}
+
+@keyframes glint {
+  to {
+    background-position: 200% center;
+  }
 }
 
 .hero-shop-btn {
@@ -544,6 +559,42 @@ a:hover {
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
   }
+}
+
+/* Tutorial Cards Hover States */
+.tutorial-card {
+  padding: 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  cursor: default;
+}
+
+.tutorial-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.tutorial-card.activity:hover {
+  border-color: #8a2be2;
+  box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2), inset 0 0 20px rgba(138, 43, 226, 0.05);
+}
+
+.tutorial-card.sub:hover {
+  border-color: #FFD700;
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15), inset 0 0 20px rgba(255, 215, 0, 0.05);
+}
+
+.tutorial-card.gift:hover {
+  border-color: #4CAF50;
+  box-shadow: 0 10px 30px rgba(76, 175, 80, 0.15), inset 0 0 20px rgba(76, 175, 80, 0.05);
+}
+
+.tutorial-card.kicks:hover {
+  border-color: #00e5ff;
+  box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05);
 }
 
 /* ===== LEADERBOARD ===== */
