@@ -23,6 +23,7 @@ interface Purchase {
   purchased_at: string;
   trade_url: string;
   current_points: number;
+  is_sent: number;
 }
 
 interface ShopItem {
@@ -78,8 +79,9 @@ export default function AdminPage() {
   const [editingPoints, setEditingPoints] = useState(false);
   const [editPointsValue, setEditPointsValue] = useState(0);
 
-  // Search
+  // Search & Filters
   const [searchQuery, setSearchQuery] = useState("");
+  const [showOnlyUnsent, setShowOnlyUnsent] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -223,6 +225,22 @@ export default function AdminPage() {
     }
   };
 
+  const handleToggleSent = async (id: number, currentStatus: number) => {
+    try {
+      const newStatus = currentStatus === 1 ? 0 : 1;
+      const res = await fetch("/api/admin/purchases", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, isSent: newStatus === 1 }),
+      });
+      if (res.ok) {
+        setPurchases(purchases.map(p => p.id === id ? { ...p, is_sent: newStatus } : p));
+      }
+    } catch (e) {
+      console.error("Chyba při změně stavu", e);
+    }
+  };
+
 
   const handleUpdatePoints = async () => {
     if (!selectedUser) return;
@@ -256,10 +274,12 @@ export default function AdminPage() {
     u.id.includes(searchQuery)
   );
 
-  const filteredPurchases = purchases.filter(p =>
-    (p.user_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.item_title || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPurchases = purchases.filter(p => {
+    const matchesSearch = (p.user_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (p.item_title || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = showOnlyUnsent ? p.is_sent === 0 : true;
+    return matchesSearch && matchesFilter;
+  });
 
   if (loading) {
     return (
@@ -377,15 +397,27 @@ export default function AdminPage() {
 
         {/* SEARCH */}
         {activeTab !== "items" && (
-          <div className="admin-search">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder={activeTab === "users" ? "Hledat uživatele..." : "Hledat nákup..."}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="admin-search-input"
-            />
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", width: "100%", justifyContent: "space-between" }}>
+            <div className="admin-search" style={{ flex: 1 }}>
+              <Search size={18} />
+              <input
+                type="text"
+                placeholder={activeTab === "users" ? "Hledat uživatele..." : "Hledat nákup..."}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="admin-search-input"
+              />
+            </div>
+            {activeTab === "purchases" && (
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer", whiteSpace: "nowrap" }}>
+                <input 
+                  type="checkbox" 
+                  checked={showOnlyUnsent} 
+                  onChange={(e) => setShowOnlyUnsent(e.target.checked)}
+                />
+                Pouze neodeslané
+              </label>
+            )}
           </div>
         )}
 
@@ -408,7 +440,7 @@ export default function AdminPage() {
                   </thead>
                   <tbody>
                     {filteredPurchases.map((p) => (
-                      <tr key={p.id}>
+                      <tr key={p.id} style={{ opacity: p.is_sent ? 0.5 : 1 }}>
                         <td className="admin-td-date">
                           {new Date(p.purchased_at.replace(" ", "T") + "Z").toLocaleString("cs-CZ")}
                         </td>
@@ -419,7 +451,15 @@ export default function AdminPage() {
                         </td>
                         <td>{p.item_title}</td>
                         <td className="admin-td-cost">{p.cost.toLocaleString()} bodů</td>
-                        <td className="admin-td-actions" style={{ display: "flex", gap: "0.5rem" }}>
+                        <td className="admin-td-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.8rem", cursor: "pointer", background: p.is_sent ? "rgba(76, 175, 80, 0.2)" : "rgba(255,255,255,0.05)", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "1px solid", borderColor: p.is_sent ? "#4CAF50" : "var(--glass-border)" }}>
+                            <input 
+                              type="checkbox" 
+                              checked={p.is_sent === 1} 
+                              onChange={() => handleToggleSent(p.id, p.is_sent)}
+                            />
+                            {p.is_sent ? "Odesláno" : "Odeslat"}
+                          </label>
                           <button className="admin-btn-small" onClick={() => openUserDetail(p.user_id)}>
                             Profil
                           </button>

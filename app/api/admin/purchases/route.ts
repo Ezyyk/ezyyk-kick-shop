@@ -38,3 +38,24 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  try {
+    const { id, isSent } = await request.json();
+    if (id === undefined || isSent === undefined) {
+      return NextResponse.json({ error: "Missing ID or isSent status" }, { status: 400 });
+    }
+    
+    const { updatePurchaseStatus } = await import("@/lib/db");
+    await updatePurchaseStatus(id, isSent);
+    
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}

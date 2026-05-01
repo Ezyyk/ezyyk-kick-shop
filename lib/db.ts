@@ -86,13 +86,6 @@ export async function getDb() {
     );
   `);
 
-  // Migration for existing table
-  try {
-    await wrapper.exec('ALTER TABLE shop_items ADD COLUMN stock INTEGER DEFAULT -1');
-  } catch (e) {
-    // Column already exists, ignore error
-  }
-
   await wrapper.exec(`
     CREATE TABLE IF NOT EXISTS giveaways (
       id TEXT PRIMARY KEY,
@@ -157,6 +150,15 @@ export async function getDb() {
       created_at DATETIME DEFAULT (datetime('now'))
     );
   `);
+
+  // Migrations
+  try {
+    await wrapper.exec('ALTER TABLE shop_items ADD COLUMN stock INTEGER DEFAULT -1');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE purchase_history ADD COLUMN is_sent BOOLEAN DEFAULT 0');
+  } catch (e) {}
 
   return wrapper;
 }
@@ -343,6 +345,11 @@ export async function getUserPurchases(userId: string) {
 export async function deletePurchase(id: number) {
   const db = await getDb();
   await db.run('DELETE FROM purchase_history WHERE id = ?', id);
+}
+
+export async function updatePurchaseStatus(id: number, isSent: boolean) {
+  const db = await getDb();
+  await db.run('UPDATE purchase_history SET is_sent = ? WHERE id = ?', isSent ? 1 : 0, id);
 }
 
 export async function getShopItems() {
