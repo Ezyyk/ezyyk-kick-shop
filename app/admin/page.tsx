@@ -167,7 +167,7 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json();
         setShopItems(data.items);
-        setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
+        setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0 });
         setShowForm(false);
         setIsEditingItem(false);
       } else {
@@ -551,7 +551,7 @@ export default function AdminPage() {
               <h3>Vlastní itemy</h3>
               <button className="admin-btn admin-btn-primary" onClick={() => {
                 if (!showForm) {
-                  setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
+                  setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0 });
                   setIsEditingItem(false);
                 }
                 setShowForm(!showForm);
@@ -652,7 +652,7 @@ export default function AdminPage() {
                   <div className="admin-form-group admin-form-wide">
                     <label style={{ display: "flex", justifyContent: "space-between" }}>
                       Velikost obrázku (Zoom)
-                      <span>{newItem.imageScale.toFixed(1)}x</span>
+                      <span>{(newItem.imageScale || 1.0).toFixed(1)}x</span>
                     </label>
                     <input 
                       type="range" 
@@ -751,7 +751,7 @@ export default function AdminPage() {
               <h2><Gift size={20} /> Giveaways</h2>
               <button className="admin-btn admin-btn-primary" onClick={() => {
                 if (!showGwForm) {
-                  setNewGiveaway({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "" });
+                  setNewGiveaway({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "", imageScale: 1.0 });
                   setIsEditingGw(false);
                 }
                 setShowGwForm(!showGwForm);
@@ -813,7 +813,7 @@ export default function AdminPage() {
                   <div className="admin-form-group admin-form-wide">
                     <label style={{ display: "flex", justifyContent: "space-between" }}>
                       Velikost obrázku (Zoom)
-                      <span>{newGiveaway.imageScale.toFixed(1)}x</span>
+                      <span>{(newGiveaway.imageScale || 1.0).toFixed(1)}x</span>
                     </label>
                     <input 
                       type="range" 
