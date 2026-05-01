@@ -120,7 +120,7 @@ export default function SocialsPage() {
                 borderRadius: "12px",
                 display: "flex",
                 alignItems: "center",
-                justify-content: center,
+                justifyContent: "center",
                 border: `1px solid ${link.color}40`
               }}>
                 {link.icon}
