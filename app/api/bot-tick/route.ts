@@ -4,9 +4,9 @@ import {
   addPointsByName,
   markChatPointsAwarded,
   logBotEvent,
-  getSetting,
   createRedeemCode,
   deactivateOldCodes,
+  checkAndDrawGiveaways,
 } from '@/lib/db';
 import { sendChatMessage } from '@/lib/kick-api';
 
@@ -78,6 +78,12 @@ export async function POST(request: Request) {
         codeDropped = true;
         console.log(`[BOT-TICK] 🎁 Code dropped: ${code}`);
       }
+    }
+    
+    // --- GIVEAWAY DRAW LOGIC ---
+    const drawnGiveaways = await checkAndDrawGiveaways();
+    if (drawnGiveaways > 0) {
+      console.log(`[BOT-TICK] 🎁 Drawn ${drawnGiveaways} giveaways`);
     }
 
     return NextResponse.json({ 

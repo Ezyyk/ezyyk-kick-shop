@@ -554,16 +554,16 @@
 }
 
 .admin-btn-delete {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 0, 0, 0.3);
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.2);
   color: #ff4444;
-  padding: 0.5rem;
-  border-radius: 50%;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
   cursor: pointer;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-btn-delete:hover {

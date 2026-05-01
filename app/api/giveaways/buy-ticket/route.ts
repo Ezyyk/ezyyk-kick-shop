@@ -15,11 +15,11 @@ export async function POST(req: Request) {
   
   // Check giveaway exists and is active
   const giveaway = await db.get(
-    "SELECT * FROM giveaways WHERE id = ? AND status = 'active' AND ends_at > datetime('now')",
+    "SELECT * FROM giveaways WHERE id = ? AND status = 'active'",
     giveawayId
   );
   
-  if (!giveaway) {
+  if (!giveaway || new Date(giveaway.ends_at) <= new Date()) {
     return NextResponse.json({ error: "Giveaway neexistuje nebo skončil" }, { status: 400 });
   }
   

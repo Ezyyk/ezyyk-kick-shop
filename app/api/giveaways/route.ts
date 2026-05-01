@@ -1,42 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getDb } from "@/lib/db";
-
-// Auto-draw winner for ended giveaways
-async function autoDrawWinners() {
-  const db = await getDb();
-  const ended = await db.all(
-    "SELECT * FROM giveaways WHERE status = 'active' AND ends_at <= datetime('now')"
-  );
-  
-  for (const giveaway of ended) {
-    const tickets = await db.all(
-      'SELECT user_name FROM giveaway_tickets WHERE giveaway_id = ?',
-      giveaway.id
-    );
-    
-    if (tickets.length > 0) {
-      // Random draw - each ticket = one chance
-      const winnerTicket = tickets[Math.floor(Math.random() * tickets.length)];
-      await db.run(
-        "UPDATE giveaways SET status = 'ended', winner_name = ? WHERE id = ?",
-        winnerTicket.user_name, giveaway.id
-      );
-    } else {
-      // No tickets sold - end without winner
-      await db.run(
-        "UPDATE giveaways SET status = 'ended', winner_name = NULL WHERE id = ?",
-        giveaway.id
-      );
-    }
-  }
-}
+import { getDb, checkAndDrawGiveaways } from "@/lib/db";
 
 export async function GET() {
   const db = await getDb();
   
   // Auto-draw any expired giveaways
-  await autoDrawWinners();
+  await checkAndDrawGiveaways();
   
   const giveaways = await db.all(
     'SELECT * FROM giveaways ORDER BY CASE WHEN status = \'active\' THEN 0 ELSE 1 END, ends_at ASC'

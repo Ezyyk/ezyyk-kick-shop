@@ -60,17 +60,55 @@ export async function POST(req: Request) {
   return NextResponse.json({ success: true });
 }
 
+// PUT - update existing giveaway
+export async function PUT(req: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const { id, title, description, ticketCost, endsAt, imageUrl } = await req.json();
+  
+  if (!id || !title || !ticketCost || !endsAt) {
+    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  }
+  
+  const db = await getDb();
+  await db.run(
+    'UPDATE giveaways SET title = ?, description = ?, image_url = ?, ticket_cost = ?, ends_at = ? WHERE id = ?',
+    title, description || "", imageUrl || "", ticketCost, endsAt, id
+  );
+  
+  return NextResponse.json({ success: true });
+}
+
 // DELETE - delete a giveaway and its tickets
 export async function DELETE(req: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const { id } = await req.json();
-  const db = await getDb();
-  
-  await db.run('DELETE FROM giveaway_tickets WHERE giveaway_id = ?', id);
-  await db.run('DELETE FROM giveaways WHERE id = ?', id);
-  
-  return NextResponse.json({ success: true });
+  try {
+    const { id } = await req.json();
+    console.log(`[ADMIN-API] Attempting to delete giveaway: ${id}`);
+    
+    const db = await getDb();
+    
+    // First delete tickets (foreign key constraint)
+    const ticketsRes = await db.run('DELETE FROM giveaway_tickets WHERE giveaway_id = ?', id);
+    console.log(`[ADMIN-API] Deleted ${ticketsRes.changes} tickets for giveaway ${id}`);
+    
+    // Then delete giveaway
+    const gwRes = await db.run('DELETE FROM giveaways WHERE id = ?', id);
+    
+    if (gwRes.changes === 0) {
+      console.warn(`[ADMIN-API] No giveaway found with id: ${id}`);
+      return NextResponse.json({ error: "Giveaway nebyl nalezen" }, { status: 404 });
+    }
+    
+    console.log(`[ADMIN-API] Successfully deleted giveaway: ${id}`);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[ADMIN-API] Error deleting giveaway:", error);
+    return NextResponse.json({ error: "Interní chyba při mazání" }, { status: 500 });
+  }
 }

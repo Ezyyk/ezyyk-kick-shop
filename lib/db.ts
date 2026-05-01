@@ -382,3 +382,50 @@ export async function updateUserPoints(id: string, points: number) {
   await db.run('UPDATE users SET points = ? WHERE id = ?', points, id);
   return await getUser(id);
 }
+
+/**
+ * GIVEAWAY LOGIC
+ */
+export async function checkAndDrawGiveaways() {
+  const db = await getDb();
+  
+  // Find active giveaways that have ended
+  // We fetch all active ones and check date in JS to avoid SQLite timezone issues
+  const active = await db.all("SELECT * FROM giveaways WHERE status = 'active'");
+  const now = new Date();
+  
+  let drawnCount = 0;
+  
+  for (const g of active) {
+    const endTime = new Date(g.ends_at);
+    
+    if (endTime <= now) {
+      console.log(`[GIVEAWAY] Drawing winner for: ${g.title} (${g.id})`);
+      
+      const tickets = await db.all(
+        'SELECT user_name FROM giveaway_tickets WHERE giveaway_id = ?',
+        g.id
+      );
+      
+      if (tickets.length > 0) {
+        // Random draw
+        const winner = tickets[Math.floor(Math.random() * tickets.length)];
+        await db.run(
+          "UPDATE giveaways SET status = 'ended', winner_name = ? WHERE id = ?",
+          winner.user_name, g.id
+        );
+        console.log(`[GIVEAWAY] Winner drawn: ${winner.user_name}`);
+      } else {
+        // No tickets
+        await db.run(
+          "UPDATE giveaways SET status = 'ended', winner_name = NULL WHERE id = ?",
+          g.id
+        );
+        console.log(`[GIVEAWAY] Ended with no tickets.`);
+      }
+      drawnCount++;
+    }
+  }
+  
+  return drawnCount;
+}

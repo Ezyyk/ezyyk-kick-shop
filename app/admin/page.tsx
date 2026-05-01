@@ -1,7 +1,7 @@
 "use client";
 import "./admin.css";
 import React, { useState, useEffect } from "react";
-import { Lock, Users, ShoppingCart, Package, Trash2, Plus, ExternalLink, ArrowLeft, Search, Edit3, Save, X, Gift, Trophy, Ticket, MessageSquare } from "lucide-react";
+import { Lock, Users, ShoppingCart, Package, Trash2, Plus, ExternalLink, ArrowLeft, Search, Edit3, Save, X, Gift, Trophy, Ticket, MessageSquare, Gem } from "lucide-react";
 import ImageUploader from "@/components/ImageUploader";
 
 interface User {
@@ -71,6 +71,7 @@ export default function AdminPage() {
   // New giveaway form
   const [newGiveaway, setNewGiveaway] = useState({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "" });
   const [showGwForm, setShowGwForm] = useState(false);
+  const [isEditingGw, setIsEditingGw] = useState(false);
 
   // User detail modal
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -581,29 +582,56 @@ export default function AdminPage() {
             {shopItems.length === 0 ? (
               <div className="admin-empty">Zatím žádné vlastní itemy</div>
             ) : (
-              <div className="admin-items-grid">
+              <div className="shop-list-container" style={{ marginTop: "1rem" }}>
+                <div className="shop-list-header">
+                  <span>Item</span>
+                  <span>Kategorie</span>
+                  <span>Cena</span>
+                  <span>Skladem</span>
+                  <span style={{ textAlign: "right" }}>Akce</span>
+                </div>
                 {shopItems.map((item) => (
-                  <div key={item.id} className="admin-item-card">
-                    {item.image_url && (
-                      <img src={item.image_url} alt={item.title} className="admin-item-image" />
-                    )}
-                    <div className="admin-item-info">
-                      <h4>{item.title}</h4>
-                      <p>{item.description}</p>
-                      <div className="admin-item-meta">
-                        <span className="admin-item-cost">{item.cost.toLocaleString()} bodů</span>
-                        <span className="admin-item-category">{item.category}</span>
-                        <span className="admin-item-stock" style={{ color: item.stock === 0 ? "#ff4444" : (item.stock === -1 ? "#00e5ff" : "#fff") }}>
-                          {item.stock === -1 ? "Neomezeno" : `Sklad: ${item.stock} ks`}
+                  <div key={item.id} className="shop-list-row">
+                    <div className="shop-col-item">
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.title} className="shop-item-thumb" />
+                      ) : (
+                        <div className="shop-item-thumb" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <Package size={20} opacity={0.3} />
+                        </div>
+                      )}
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span className="shop-item-name">{item.title}</span>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", maxWidth: "250px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {item.description}
                         </span>
                       </div>
                     </div>
-                    <div className="admin-item-actions" style={{ display: "flex", gap: "0.5rem", position: "absolute", top: "1rem", right: "1rem" }}>
-                      <button className="admin-btn-small" style={{ padding: "0.25rem 0.5rem" }} onClick={() => handleEditItemClick(item)}>
+
+                    <div className="shop-col-category">
+                      {item.category === "cs2" ? "Counter Strike 2" : (item.category === "minecraft" ? "Minecraft" : "Ostatní")}
+                    </div>
+
+                    <div className="shop-col-price">
+                      <Gem size={16} /> {item.cost.toLocaleString()}
+                    </div>
+
+                    <div className="shop-col-stock">
+                      {item.stock === -1 ? (
+                        <span className="shop-stock-unlimited">Neomezeno</span>
+                      ) : (
+                        <span className={item.stock === 0 ? "shop-stock-empty" : (item.stock < 5 ? "shop-stock-low" : "")}>
+                          {item.stock} ks
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="shop-col-actions" style={{ gap: "0.5rem" }}>
+                      <button className="admin-btn-small" style={{ padding: "0.25rem 0.5rem" }} onClick={() => handleEditItemClick(item)} title="Upravit">
                         <Edit3 size={14} />
                       </button>
-                      <button className="admin-btn-delete" onClick={() => handleDeleteItem(item.id)}>
-                        <Trash2 size={16} />
+                      <button className="admin-btn-delete" style={{ padding: "0.25rem 0.5rem" }} onClick={() => handleDeleteItem(item.id)} title="Odstranit">
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
@@ -618,7 +646,13 @@ export default function AdminPage() {
           <div className="admin-tab-content">
             <div className="admin-section-header">
               <h2><Gift size={20} /> Giveaways</h2>
-              <button className="admin-btn admin-btn-primary" onClick={() => setShowGwForm(!showGwForm)}>
+              <button className="admin-btn admin-btn-primary" onClick={() => {
+                if (!showGwForm) {
+                  setNewGiveaway({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "" });
+                  setIsEditingGw(false);
+                }
+                setShowGwForm(!showGwForm);
+              }}>
                 <Plus size={16} /> Nový Giveaway
               </button>
             </div>
@@ -627,22 +661,29 @@ export default function AdminPage() {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 try {
+                  // Convert local time to ISO UTC string
+                  const localDate = new Date(newGiveaway.endsAt);
+                  const utcDate = localDate.toISOString();
+                  
                   const res = await fetch("/api/admin/giveaways", {
-                    method: "POST",
+                    method: isEditingGw ? "PUT" : "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(newGiveaway),
+                    body: JSON.stringify({ ...newGiveaway, endsAt: utcDate }),
                   });
                   if (res.ok) {
                     setNewGiveaway({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "" });
                     setShowGwForm(false);
+                    setIsEditingGw(false);
                     loadData();
                   }
-                } catch {}
+                } catch (e) {
+                  console.error("Chyba při ukládání giveawaye", e);
+                }
               }} className="admin-form">
                 <div className="admin-form-grid">
                   <div className="admin-form-group">
-                    <label>ID</label>
-                    <input type="text" placeholder="gw_001" value={newGiveaway.id} onChange={(e) => setNewGiveaway({...newGiveaway, id: e.target.value})} className="admin-input" required />
+                    <label>ID {isEditingGw && "(nelze měnit)"}</label>
+                    <input type="text" placeholder="gw_001" value={newGiveaway.id} onChange={(e) => setNewGiveaway({...newGiveaway, id: e.target.value})} className="admin-input" required disabled={isEditingGw} />
                   </div>
                   <div className="admin-form-group">
                     <label>Název</label>
@@ -667,7 +708,9 @@ export default function AdminPage() {
                   />
                 </div>
                 <div className="admin-form-actions">
-                  <button type="submit" className="admin-btn admin-btn-primary"><Save size={16} /> Vytvořit</button>
+                  <button type="submit" className="admin-btn admin-btn-primary">
+                    <Save size={16} /> {isEditingGw ? "Uložit změny" : "Vytvořit"}
+                  </button>
                   <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setShowGwForm(false)}>Zrušit</button>
                 </div>
               </form>
@@ -676,39 +719,120 @@ export default function AdminPage() {
             {giveaways.length === 0 ? (
               <div className="admin-empty">Žádné giveaways</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div className="shop-list-container" style={{ marginTop: "1rem" }}>
+                <div className="shop-list-header" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr 1fr" }}>
+                  <span>Název</span>
+                  <span>Ticket</span>
+                  <span>Stav</span>
+                  <span>Účast</span>
+                  <span>Konec / Výherce</span>
+                  <span style={{ textAlign: "right" }}>Akce</span>
+                </div>
                 {giveaways.map((gw) => (
-                  <div key={gw.id} className="admin-item-card" style={{ flexDirection: "column", alignItems: "stretch" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <h4 style={{ margin: 0 }}>{gw.title}</h4>
-                        <p style={{ margin: "0.25rem 0", fontSize: "0.85rem", color: "#aaa" }}>{gw.description}</p>
-                        <div style={{ display: "flex", gap: "1rem", fontSize: "0.85rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
-                          <span style={{ color: "#00e5ff" }}><Ticket size={14} style={{ verticalAlign: "middle" }} /> {gw.ticket_cost} bodů/ticket</span>
-                          <span style={{ color: gw.status === "active" ? "#4CAF50" : "#ff9800" }}>{gw.status === "active" ? "🟢 Aktivní" : "🔴 Ukončený"}</span>
-                          <span style={{ color: "#aaa" }}>📊 {gw.total_tickets} ticketů</span>
-                          <span style={{ color: "#aaa" }}>⏰ {new Date(gw.ends_at).toLocaleString("cs-CZ")}</span>
+                  <div key={gw.id} className="shop-list-row" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: "0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr 1fr", width: "100%", alignItems: "center" }}>
+                      <div className="shop-col-item">
+                        {gw.image_url ? (
+                          <img src={gw.image_url} alt={gw.title} className="shop-item-thumb" />
+                        ) : (
+                          <div className="shop-item-thumb" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Gift size={20} opacity={0.3} />
+                          </div>
+                        )}
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span className="shop-item-name">{gw.title}</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>{gw.description}</span>
                         </div>
-                        {gw.winner_name && (
-                          <div style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem", color: "#FFD700" }}>
-                            <Trophy size={16} /> Výherce: <strong>{gw.winner_name}</strong>
+                      </div>
+
+                      <div className="shop-col-price">
+                        <Ticket size={14} /> {gw.ticket_cost}
+                      </div>
+
+                      <div>
+                        <span className={`admin-badge ${gw.status === "active" ? "active" : ""}`} style={{ 
+                          background: gw.status === "active" ? "rgba(76, 175, 80, 0.15)" : "rgba(255, 152, 0, 0.15)",
+                          color: gw.status === "active" ? "#4CAF50" : "#ff9800",
+                          borderColor: gw.status === "active" ? "rgba(76, 175, 80, 0.3)" : "rgba(255, 152, 0, 0.3)",
+                          fontSize: "0.75rem"
+                        }}>
+                          {gw.status === "active" ? "🟢 Aktivní" : "🏆 Vylosováno"}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+                        📊 {gw.total_tickets} ticketů
+                      </div>
+
+                      <div style={{ fontSize: "0.85rem" }}>
+                        {gw.winner_name ? (
+                          <div style={{ color: "#FFD700", display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: "600" }}>
+                            <Trophy size={14} /> {gw.winner_name}
+                          </div>
+                        ) : (
+                          <div style={{ color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                            <Search size={14} /> {new Date(gw.ends_at).toLocaleString("cs-CZ")}
                           </div>
                         )}
                       </div>
-                      <button className="admin-btn-delete" onClick={async () => {
-                        if (!confirm("Opravdu smazat tento giveaway?")) return;
-                        await fetch("/api/admin/giveaways", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: gw.id }) });
-                        loadData();
-                      }}>
-                        <Trash2 size={16} />
-                      </button>
+
+                      <div className="shop-col-actions" style={{ gap: "0.5rem" }}>
+                        <button className="admin-btn-small" style={{ padding: "0.25rem 0.5rem" }} onClick={() => {
+                          // Format date for datetime-local input
+                          const date = new Date(gw.ends_at);
+                          const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                          
+                          setNewGiveaway({
+                            id: gw.id,
+                            title: gw.title,
+                            description: gw.description || "",
+                            ticketCost: gw.ticket_cost,
+                            endsAt: localIso,
+                            imageUrl: gw.image_url || ""
+                          });
+                          setIsEditingGw(true);
+                          setShowGwForm(true);
+                        }} title="Upravit">
+                          <Edit3 size={14} />
+                        </button>
+                        <button 
+                          className="admin-btn-delete" 
+                          style={{ padding: "0.25rem 0.5rem", position: "relative", zIndex: 10 }} 
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("Delete clicked for:", gw.id);
+                            if (!window.confirm(`Opravdu smazat giveaway: ${gw.title}?`)) return;
+                            
+                            try {
+                              const res = await fetch("/api/admin/giveaways", { 
+                                method: "DELETE", 
+                                headers: { "Content-Type": "application/json" }, 
+                                body: JSON.stringify({ id: gw.id }) 
+                              });
+                              if (res.ok) {
+                                loadData();
+                              } else {
+                                const err = await res.json();
+                                alert("Chyba při mazání: " + (err.error || "Neznámá chyba"));
+                              }
+                            } catch (e) {
+                              alert("Chyba připojení při mazání");
+                            }
+                          }}
+                          title="Odstranit"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
+                    
                     {gw.ticket_holders.length > 0 && (
-                      <div style={{ marginTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.75rem" }}>
-                        <div style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.5rem" }}>Držitelé ticketů:</div>
+                      <div style={{ marginTop: "1rem", padding: "0.75rem", background: "rgba(0,0,0,0.2)", borderRadius: "var(--radius-sm)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div style={{ fontSize: "0.75rem", color: "#888", marginBottom: "0.5rem", textTransform: "uppercase", fontWeight: "700" }}>Držitelé ticketů:</div>
                         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                           {gw.ticket_holders.map(th => (
-                            <span key={th.user_name} style={{ background: "rgba(138,43,226,0.15)", padding: "0.25rem 0.6rem", borderRadius: "12px", fontSize: "0.8rem", color: "#ccc" }}>
+                            <span key={th.user_name} style={{ background: "rgba(138,43,226,0.15)", padding: "0.2rem 0.6rem", borderRadius: "12px", fontSize: "0.75rem", color: "#ccc", border: "1px solid rgba(138,43,226,0.2)" }}>
                               {th.user_name} ({th.count}x)
                             </span>
                           ))}
