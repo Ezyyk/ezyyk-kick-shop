@@ -54,7 +54,7 @@ export default function Home() {
           <h2 style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
             <Info size={24} color="var(--accent-primary)" /> Jak získávat body?
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem", maxWidth: "800px", margin: "0 auto" }}>
             <div className="glass-panel tutorial-card activity">
               <div style={{ background: "rgba(138, 43, 226, 0.15)", padding: "1rem", borderRadius: "50%", border: "1px solid rgba(138, 43, 226, 0.3)" }}>
                 <Tv size={32} color="var(--accent-secondary)" />
