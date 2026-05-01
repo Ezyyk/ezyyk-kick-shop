@@ -661,7 +661,18 @@ a:hover {
 }
 
 .header-user-profile {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.header-user-profile:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: rgba(138, 43, 226, 0.15) !important;
+  border-color: #8a2be2 !important;
+  box-shadow: 0 0 25px rgba(138, 43, 226, 0.4), inset 0 0 10px rgba(138, 43, 226, 0.1);
+}
+
+.header-user-profile:hover span {
+  color: #a855f7 !important;
 }
 
 .social-link-card {
