@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Header from "@/components/Header";
-import { ExternalLink, Tv, MessageSquare, Gamepad2 } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/Button";
 
@@ -67,8 +67,6 @@ const SOCIAL_LINKS = [
     ),
     color: "#00adee",
     description: "Můj Steam trade link pro nabídky."
-  }
-abídky."
   }
 ];
 
