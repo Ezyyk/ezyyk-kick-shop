@@ -1039,8 +1039,13 @@ a:hover {
   transform: scale(var(--image-scale, 1));
 }
 
+@keyframes gwImageFloat {
+  0%, 100% { transform: scale(var(--image-scale, 1)) rotate(8deg) translateY(0); }
+  50% { transform: scale(var(--image-scale, 1)) rotate(8deg) translateY(-5px); }
+}
+
 .gw-card:hover .gw-image {
-  transform: scale(var(--image-scale, 1)) rotate(8deg);
+  animation: gwImageFloat 2.5s ease-in-out infinite;
 }
 
 .gw-title {
