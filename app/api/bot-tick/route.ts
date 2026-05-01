@@ -7,6 +7,7 @@ import {
   createRedeemCode,
   deactivateOldCodes,
   checkAndDrawGiveaways,
+  getSetting,
 } from '@/lib/db';
 import { sendChatMessage } from '@/lib/kick-api';
 
