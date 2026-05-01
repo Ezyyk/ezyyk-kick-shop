@@ -603,42 +603,62 @@ a:hover {
   }
 }
 
-/* Tutorial Cards Hover States */
-.tutorial-card {
-  padding: 2.5rem 1.5rem;
-  text-align: center;
+.tutorial-card-horizontal {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 1.2rem;
-  min-height: 320px;
+  padding: 1.5rem 2rem;
+  gap: 2rem;
+  text-align: left;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
   cursor: default;
 }
 
-.tutorial-card:hover {
-  transform: translateY(-8px) scale(1.02);
+.tutorial-card-horizontal:hover {
+  transform: translateX(10px) scale(1.01);
 }
 
-.tutorial-card.activity:hover {
+.tutorial-icon-wrapper {
+  background: rgba(138, 43, 226, 0.1);
+  padding: 1.2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tutorial-text-wrapper h3 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.tutorial-text-wrapper p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.tutorial-card-horizontal.activity:hover {
   border-color: #8a2be2;
-  box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2), inset 0 0 20px rgba(138, 43, 226, 0.05);
+  box-shadow: 0 10px 30px rgba(138, 43, 226, 0.15);
 }
 
-.tutorial-card.sub:hover {
+.tutorial-card-horizontal.sub:hover {
   border-color: #FFD700;
-  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15), inset 0 0 20px rgba(255, 215, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
 }
 
-.tutorial-card.gift:hover {
+.tutorial-card-horizontal.gift:hover {
   border-color: #4CAF50;
-  box-shadow: 0 10px 30px rgba(76, 175, 80, 0.15), inset 0 0 20px rgba(76, 175, 80, 0.05);
+  box-shadow: 0 10px 30px rgba(76, 175, 80, 0.15);
 }
 
-.tutorial-card.kicks:hover {
+.tutorial-card-horizontal.kicks:hover {
   border-color: #00e5ff;
-  box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15);
 }
 
 .tutorial-card.code-drop:hover {
