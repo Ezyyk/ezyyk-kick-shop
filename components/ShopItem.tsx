@@ -29,7 +29,7 @@ export default function ShopItem({ id, title, description, cost, userPoints, ima
             src={imageUrl} 
             alt={title} 
             className={styles.image} 
-            style={{ transform: `scale(${imageScale})` }} 
+            style={{ "--image-scale": imageScale } as React.CSSProperties} 
           />
         </div>
       ) : (

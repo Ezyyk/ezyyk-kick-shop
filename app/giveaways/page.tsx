@@ -157,7 +157,7 @@ export default function GiveawaysPage() {
                           src={gw.image_url} 
                           alt={gw.title} 
                           className="gw-image" 
-                          style={{ transform: `scale(${gw.image_scale || 1.0})` }} 
+                          style={{ "--image-scale": gw.image_scale || 1.0 } as React.CSSProperties} 
                         />
                       ) : (
                         <Gift size={32} color="var(--accent-secondary)" />
