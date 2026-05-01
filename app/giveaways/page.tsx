@@ -79,7 +79,8 @@ export default function GiveawaysPage() {
   };
 
   const getTimeLeft = (endsAt: string) => {
-    const diff = new Date(endsAt + "Z").getTime() - Date.now();
+    const date = endsAt.includes("T") && !endsAt.endsWith("Z") ? endsAt + "Z" : endsAt;
+    const diff = new Date(date).getTime() - Date.now();
     if (diff <= 0) return "Vylosováno";
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
@@ -133,7 +134,8 @@ export default function GiveawaysPage() {
           ) : (
             <div className="gw-grid">
               {giveaways.map(gw => {
-                const isActive = gw.status === "active" && new Date(gw.ends_at + "Z").getTime() > Date.now();
+                const dateStr = gw.ends_at.includes("T") && !gw.ends_at.endsWith("Z") ? gw.ends_at + "Z" : gw.ends_at;
+                const isActive = gw.status === "active" && new Date(dateStr).getTime() > Date.now();
                 const qty = ticketCounts[gw.id] || 1;
                 const totalCost = gw.ticket_cost * qty;
 

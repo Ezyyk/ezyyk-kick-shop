@@ -839,8 +839,8 @@ export default function AdminPage() {
 
                       <div className="shop-col-actions" style={{ gap: "0.5rem" }}>
                         <button className="admin-btn-small" style={{ padding: "0.25rem 0.5rem" }} onClick={() => {
-                          // Format date for datetime-local input
-                          const date = new Date(gw.ends_at);
+                          const dateStr = gw.ends_at.includes("T") && !gw.ends_at.endsWith("Z") ? gw.ends_at + "Z" : gw.ends_at;
+                          const date = new Date(dateStr);
                           const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
                           
                           setNewGiveaway({

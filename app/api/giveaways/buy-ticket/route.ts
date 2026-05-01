@@ -19,7 +19,8 @@ export async function POST(req: Request) {
     giveawayId
   );
   
-  if (!giveaway || new Date(giveaway.ends_at) <= new Date()) {
+  const dateStr = giveaway.ends_at.includes("T") && !giveaway.ends_at.endsWith("Z") ? giveaway.ends_at + "Z" : giveaway.ends_at;
+  if (!giveaway || new Date(dateStr) <= new Date()) {
     return NextResponse.json({ error: "Giveaway neexistuje nebo skončil" }, { status: 400 });
   }
   

@@ -409,7 +409,8 @@ export async function checkAndDrawGiveaways() {
   let drawnCount = 0;
   
   for (const g of active) {
-    const endTime = new Date(g.ends_at);
+    const dateStr = g.ends_at.includes("T") && !g.ends_at.endsWith("Z") ? g.ends_at + "Z" : g.ends_at;
+    const endTime = new Date(dateStr);
     
     if (endTime <= now) {
       console.log(`[GIVEAWAY] Drawing winner for: ${g.title} (${g.id})`);
