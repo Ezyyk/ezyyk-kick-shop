@@ -74,7 +74,19 @@ export default function Header() {
               </Button>
             </Link>
 
-            <Link href="/#how-to-get-points" className="points-display-link">
+            <Link 
+              href="/#how-to-get-points" 
+              className="points-display-link"
+              onClick={(e) => {
+                if (window.location.pathname === '/') {
+                  e.preventDefault();
+                  const el = document.getElementById('how-to-get-points');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }
+              }}
+            >
               <div className="points-display">
                 <Gem size={18} />
                 <span>{points}</span> bodů
