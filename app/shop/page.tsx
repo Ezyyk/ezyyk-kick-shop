@@ -20,6 +20,7 @@ export default function ShopPage() {
   const [message, setMessage] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("cs2");
   const [shopItems, setShopItems] = useState<any[]>([]);
+  const [sortBy, setSortBy] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     fetchItems();
@@ -76,7 +77,9 @@ export default function ShopPage() {
     setTimeout(() => setMessage(""), 5000);
   };
 
-  const currentItems = shopItems.filter(item => item.category === activeCategory);
+  const currentItems = shopItems
+    .filter(item => item.category === activeCategory)
+    .sort((a, b) => sortBy === "desc" ? b.cost - a.cost : a.cost - b.cost);
 
   return (
     <div className="container">
@@ -101,17 +104,40 @@ export default function ShopPage() {
           </div>
         ) : session ? (
           <>
-            {/* CATEGORY TABS */}
-            <div className="shop-category-tabs">
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat.key}
-                  className={`shop-cat-tab ${activeCategory === cat.key ? "active" : ""}`}
-                  onClick={() => setActiveCategory(cat.key)}
+            {/* CATEGORY TABS & SORTING */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "wrap", gap: "1rem" }}>
+              <div className="shop-category-tabs" style={{ width: "auto", padding: 0 }}>
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.key}
+                    className={`shop-cat-tab ${activeCategory === cat.key ? "active" : ""}`}
+                    onClick={() => setActiveCategory(cat.key)}
+                  >
+                    {cat.icon} {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Seřadit:</span>
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value as "asc" | "desc")}
+                  style={{ 
+                    background: "var(--glass-bg)", 
+                    border: "1px solid var(--glass-border)", 
+                    color: "var(--text-primary)",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "50px",
+                    outline: "none",
+                    cursor: "pointer",
+                    fontSize: "0.9rem"
+                  }}
                 >
-                  {cat.icon} {cat.label}
-                </button>
-              ))}
+                  <option value="desc" style={{ background: "#1a1a1a" }}>Nejdražší</option>
+                  <option value="asc" style={{ background: "#1a1a1a" }}>Nejlevnější</option>
+                </select>
+              </div>
             </div>
 
             <section style={{ width: "100%" }}>
