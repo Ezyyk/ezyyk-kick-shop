@@ -828,7 +828,17 @@ export default function AdminPage() {
                       <div style={{ fontSize: "0.85rem" }}>
                         {gw.winner_name ? (
                           <div style={{ color: "#FFD700", display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: "600" }}>
-                            <Trophy size={14} /> {gw.winner_name}
+                            <Trophy size={14} /> 
+                            <button 
+                              className="admin-link-btn" 
+                              style={{ color: "#FFD700", fontSize: "0.85rem" }} 
+                              onClick={() => {
+                                const user = users.find(u => u.name === gw.winner_name);
+                                if (user) openUserDetail(user.id);
+                              }}
+                            >
+                              {gw.winner_name}
+                            </button>
                           </div>
                         ) : (
                           <div style={{ color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
@@ -893,9 +903,26 @@ export default function AdminPage() {
                         <div style={{ fontSize: "0.75rem", color: "#888", marginBottom: "0.5rem", textTransform: "uppercase", fontWeight: "700" }}>Držitelé ticketů:</div>
                         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                           {gw.ticket_holders.map(th => (
-                            <span key={th.user_name} style={{ background: "rgba(138,43,226,0.15)", padding: "0.2rem 0.6rem", borderRadius: "12px", fontSize: "0.75rem", color: "#ccc", border: "1px solid rgba(138,43,226,0.2)" }}>
+                            <button 
+                              key={th.user_name} 
+                              className="admin-link-btn"
+                              onClick={() => {
+                                const user = users.find(u => u.name === th.user_name);
+                                if (user) openUserDetail(user.id);
+                              }}
+                              style={{ 
+                                background: "rgba(138,43,226,0.15)", 
+                                padding: "0.2rem 0.6rem", 
+                                borderRadius: "12px", 
+                                fontSize: "0.75rem", 
+                                color: "#ccc", 
+                                border: "1px solid rgba(138,43,226,0.2)",
+                                cursor: "pointer",
+                                transition: "all 0.2s"
+                              }}
+                            >
                               {th.user_name} ({th.count}x)
-                            </span>
+                            </button>
                           ))}
                         </div>
                       </div>
