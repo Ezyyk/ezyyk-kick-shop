@@ -1,0 +1,306 @@
+import { createClient, Client } from '@libsql/client';
+
+let client: Client | null = null;
+
+/**
+ * Compatibility wrapper to maintain sqlite-like API (get, all, run, exec)
+ * while using the LibSQL client for Turso.
+ */
+class LibSqlCompatibilityWrapper {
+  constructor(private client: Client) {}
+
+  async get(sql: string, ...args: any[]) {
+    const res = await this.client.execute({ sql, args });
+    return res.rows[0] as any;
+  }
+
+  async all(sql: string, ...args: any[]) {
+    const res = await this.client.execute({ sql, args });
+    return res.rows as any[];
+  }
+
+  async run(sql: string, ...args: any[]) {
+    const res = await this.client.execute({ sql, args });
+    return { lastID: Number(res.lastInsertRowid), changes: res.rowsAffected };
+  }
+
+  async exec(sql: string) {
+    await this.client.execute(sql);
+  }
+}
+
+let wrapper: LibSqlCompatibilityWrapper | null = null;
+
+export async function getDb() {
+  if (wrapper) return wrapper;
+
+  const url = process.env.TURSO_DATABASE_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+
+  if (!url) {
+    throw new Error('TURSO_DATABASE_URL is not defined');
+  }
+
+  client = createClient({
+    url: url,
+    authToken: authToken,
+  });
+
+  wrapper = new LibSqlCompatibilityWrapper(client);
+
+  // Initialize tables if they don't exist
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      points INTEGER DEFAULT 0,
+      is_sub BOOLEAN DEFAULT 0,
+      last_ping DATETIME,
+      trade_url TEXT
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS purchase_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      user_name TEXT,
+      item_id TEXT NOT NULL,
+      item_title TEXT NOT NULL,
+      cost INTEGER NOT NULL,
+      purchased_at DATETIME DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS shop_items (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      cost INTEGER NOT NULL,
+      image_url TEXT,
+      category TEXT DEFAULT 'other',
+      created_at DATETIME DEFAULT (datetime('now'))
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS giveaways (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      image_url TEXT,
+      ticket_cost INTEGER NOT NULL DEFAULT 100,
+      ends_at DATETIME NOT NULL,
+      winner_name TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT (datetime('now'))
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS giveaway_tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      giveaway_id TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      purchased_at DATETIME DEFAULT (datetime('now')),
+      FOREIGN KEY (giveaway_id) REFERENCES giveaways(id)
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS bot_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT NOT NULL,
+      username TEXT NOT NULL,
+      kick_user_id INTEGER,
+      points_awarded INTEGER DEFAULT 0,
+      details TEXT,
+      created_at DATETIME DEFAULT (datetime('now'))
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS chat_activity (
+      username TEXT PRIMARY KEY,
+      kick_user_id INTEGER,
+      last_chat_at DATETIME,
+      last_points_at DATETIME,
+      is_sub BOOLEAN DEFAULT 0
+    );
+  `);
+
+  return wrapper;
+}
+
+export async function getUser(id: string) {
+  const db = await getDb();
+  return await db.get('SELECT * FROM users WHERE id = ?', id);
+}
+
+export async function getUserByName(name: string) {
+  const db = await getDb();
+  return await db.get('SELECT * FROM users WHERE name = ?', name);
+}
+
+export async function createUser(id: string, name: string) {
+  const db = await getDb();
+  await db.run('INSERT OR IGNORE INTO users (id, name, points) VALUES (?, ?, 0)', id, name);
+  return await getUser(id);
+}
+
+export async function findOrCreateUserByName(name: string) {
+  const db = await getDb();
+  let user = await db.get('SELECT * FROM users WHERE name = ?', name);
+  if (!user) {
+    await db.run('INSERT OR IGNORE INTO users (id, name, points) VALUES (?, ?, 0)', name, name);
+    user = await db.get('SELECT * FROM users WHERE name = ?', name);
+  }
+  return user;
+}
+
+export async function addPoints(id: string, points: number) {
+  const db = await getDb();
+  await db.run('UPDATE users SET points = points + ?, last_ping = datetime("now") WHERE id = ?', points, id);
+  return await getUser(id);
+}
+
+export async function addPointsByName(name: string, points: number) {
+  const db = await getDb();
+  const user = await findOrCreateUserByName(name);
+  if (user) {
+    await db.run('UPDATE users SET points = points + ?, last_ping = datetime("now") WHERE name = ?', points, name);
+  }
+  return await getUserByName(name);
+}
+
+export async function spendPoints(id: string, points: number) {
+  const db = await getDb();
+  const user = await getUser(id);
+  if (!user || user.points < points) return false;
+  
+  await db.run('UPDATE users SET points = points - ? WHERE id = ?', points, id);
+  return true;
+}
+
+export async function updateTradeUrl(id: string, tradeUrl: string) {
+  const db = await getDb();
+  await db.run('UPDATE users SET trade_url = ? WHERE id = ?', tradeUrl, id);
+  return await getUser(id);
+}
+
+export async function logBotEvent(eventType: string, username: string, kickUserId: number | null, pointsAwarded: number, details?: string) {
+  const db = await getDb();
+  await db.run(
+    'INSERT INTO bot_events (event_type, username, kick_user_id, points_awarded, details) VALUES (?, ?, ?, ?, ?)',
+    eventType, username, kickUserId, pointsAwarded, details || null
+  );
+}
+
+export async function getRecentBotEvents(limit: number = 50) {
+  const db = await getDb();
+  return await db.all('SELECT * FROM bot_events ORDER BY created_at DESC LIMIT ?', limit);
+}
+
+export async function updateChatActivity(username: string, kickUserId: number | null, isSub: boolean) {
+  const db = await getDb();
+  await db.run(
+    `INSERT INTO chat_activity (username, kick_user_id, last_chat_at, is_sub)
+     VALUES (?, ?, datetime('now'), ?)
+     ON CONFLICT(username) DO UPDATE SET
+       last_chat_at = datetime('now'),
+       kick_user_id = COALESCE(?, kick_user_id),
+       is_sub = ?`,
+    username, kickUserId, isSub ? 1 : 0, kickUserId, isSub ? 1 : 0
+  );
+}
+
+export async function getActiveChattersDueForPoints() {
+  const db = await getDb();
+  return await db.all(
+    `SELECT ca.username, ca.kick_user_id, ca.is_sub
+     FROM chat_activity ca
+     WHERE ca.last_chat_at >= datetime('now', '-30 minutes')
+       AND (ca.last_points_at IS NULL OR ca.last_points_at <= datetime('now', '-5 minutes'))`
+  );
+}
+
+export async function markChatPointsAwarded(username: string) {
+  const db = await getDb();
+  await db.run(
+    `UPDATE chat_activity SET last_points_at = datetime('now') WHERE username = ?`,
+    username
+  );
+}
+
+export async function updateUserSubStatus(name: string, isSub: boolean) {
+  const db = await getDb();
+  await db.run('UPDATE users SET is_sub = ? WHERE name = ?', isSub ? 1 : 0, name);
+  await db.run('UPDATE chat_activity SET is_sub = ? WHERE username = ?', isSub ? 1 : 0, name);
+}
+
+export async function getTopUsers(limit: number = 20) {
+  const db = await getDb();
+  return await db.all('SELECT name, points, is_sub FROM users ORDER BY points DESC LIMIT ?', limit);
+}
+
+export async function getAllUsers() {
+  const db = await getDb();
+  return await db.all('SELECT id, name, points, is_sub, last_ping, trade_url FROM users ORDER BY points DESC');
+}
+
+export async function logPurchase(userId: string, userName: string, itemId: string, itemTitle: string, cost: number) {
+  const db = await getDb();
+  await db.run(
+    'INSERT INTO purchase_history (user_id, user_name, item_id, item_title, cost) VALUES (?, ?, ?, ?, ?)',
+    userId, userName, itemId, itemTitle, cost
+  );
+}
+
+export async function getPurchaseHistory() {
+  const db = await getDb();
+  return await db.all(
+    'SELECT ph.*, u.trade_url, u.points as current_points FROM purchase_history ph LEFT JOIN users u ON ph.user_id = u.id ORDER BY ph.purchased_at DESC'
+  );
+}
+
+export async function getUserPurchases(userId: string) {
+  const db = await getDb();
+  return await db.all(
+    'SELECT * FROM purchase_history WHERE user_id = ? ORDER BY purchased_at DESC',
+    userId
+  );
+}
+
+export async function getShopItems() {
+  const db = await getDb();
+  return await db.all('SELECT * FROM shop_items ORDER BY created_at DESC');
+}
+
+export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string) {
+  const db = await getDb();
+  await db.run(
+    'INSERT INTO shop_items (id, title, description, cost, image_url, category) VALUES (?, ?, ?, ?, ?, ?)',
+    id, title, description, cost, imageUrl, category
+  );
+}
+
+export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string) {
+  const db = await getDb();
+  await db.run(
+    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ? WHERE id = ?',
+    title, description, cost, imageUrl, category, id
+  );
+}
+
+export async function deleteShopItem(id: string) {
+  const db = await getDb();
+  await db.run('DELETE FROM shop_items WHERE id = ?', id);
+}
+
+export async function updateUserPoints(id: string, points: number) {
+  const db = await getDb();
+  await db.run('UPDATE users SET points = ? WHERE id = ?', points, id);
+  return await getUser(id);
+}
