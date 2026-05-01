@@ -16,6 +16,7 @@ interface Giveaway {
   status: string;
   total_tickets: number;
   my_tickets: number;
+  image_scale: number;
 }
 
 export default function GiveawaysPage() {
