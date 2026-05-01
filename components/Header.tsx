@@ -86,10 +86,30 @@ export default function Header() {
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                     const targetTop = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
                     
-                    window.scrollTo({
-                      top: targetTop,
-                      behavior: 'smooth'
-                    });
+                    // Custom gradual smooth scroll animation
+                    const startY = window.pageYOffset;
+                    const distance = targetTop - startY;
+                    const duration = 1200; // 1.2 seconds for a nice gradual feel
+                    let startTime: number | null = null;
+
+                    const animation = (currentTime: number) => {
+                      if (startTime === null) startTime = currentTime;
+                      const timeElapsed = currentTime - startTime;
+                      const progress = Math.min(timeElapsed / duration, 1);
+                      
+                      // EaseInOutQuad function
+                      const ease = progress < 0.5 
+                        ? 2 * progress * progress 
+                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+                      window.scrollTo(0, startY + (distance * ease));
+                      
+                      if (timeElapsed < duration) {
+                        requestAnimationFrame(animation);
+                      }
+                    };
+
+                    requestAnimationFrame(animation);
                   }
                 }
               }}
