@@ -82,7 +82,14 @@ export default function Header() {
                   e.preventDefault();
                   const el = document.getElementById('how-to-get-points');
                   if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const rect = el.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetTop = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+                    
+                    window.scrollTo({
+                      top: targetTop,
+                      behavior: 'smooth'
+                    });
                   }
                 }
               }}
