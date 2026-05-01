@@ -361,7 +361,12 @@ export default function AdminPage() {
           <div className="admin-stat-card">
             <Package size={24} />
             <div>
-              <div className="admin-stat-value">{shopItems.length}</div>
+              <div className="admin-stat-value">
+                {shopItems.length}
+                <span style={{ fontSize: "1.1rem", fontWeight: 500, opacity: 0.7, marginLeft: "0.5rem" }}>
+                  ({shopItems.reduce((acc, item) => acc + (item.stock === -1 ? 1 : item.stock), 0)} ks)
+                </span>
+              </div>
               <div className="admin-stat-label">Itemů v shopu</div>
             </div>
           </div>
