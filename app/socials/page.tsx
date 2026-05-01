@@ -2,14 +2,14 @@
 import React from "react";
 import Header from "@/components/Header";
 import { 
-  Instagram, 
-  Youtube, 
+  Camera, 
+  Play, 
   Twitter, 
   MessageSquare, 
   ExternalLink,
   Gamepad2,
   Tv,
-  Music2
+  Music
 } from "lucide-react";
 
 const SOCIAL_LINKS = [
@@ -23,14 +23,14 @@ const SOCIAL_LINKS = [
   {
     name: "TikTok",
     url: "https://www.tiktok.com/@ezyykk",
-    icon: <Music2 size={24} />,
+    icon: <Music size={24} />,
     color: "#ff0050",
     description: "Krátké klipy a highlighty ze streamů."
   },
   {
     name: "Instagram",
     url: "https://www.instagram.com/ezyykk/",
-    icon: <Instagram size={24} />,
+    icon: <Camera size={24} />,
     color: "#E1306C",
     description: "Fotky ze života a info o streamech."
   },
@@ -44,7 +44,7 @@ const SOCIAL_LINKS = [
   {
     name: "YouTube",
     url: "https://www.youtube.com/@ezyykk",
-    icon: <Youtube size={24} />,
+    icon: <Play size={24} />,
     color: "#FF0000",
     description: "Vlogy a delší videa."
   },
