@@ -89,7 +89,13 @@ export default function Header() {
               <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{session.user?.name}</span>
             </Link>
 
-            <Button variant="secondary" onClick={() => { if(confirm("Ještě se fakt chceš odhlásit?")) signOut() }} style={{ padding: "0.5rem" }} title="Odhlásit">
+            <Button 
+              variant="secondary" 
+              className="header-logout-btn" 
+              onClick={() => { if(confirm("Ještě se fakt chceš odhlásit?")) signOut() }} 
+              style={{ padding: "0.5rem" }} 
+              title="Odhlásit"
+            >
               <LogOut size={18} />
             </Button>
           </div>
