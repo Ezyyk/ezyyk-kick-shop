@@ -10,9 +10,7 @@ const SOCIAL_LINKS = [
     name: "Kick",
     url: "https://kick.com/ezyyk",
     svgIcon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm3 3h2v2h1v1h1V8h2v2h1v1h1v2h-1v1h-1v2h-2v-3h-1v-1h-1v4H8V8z"/>
-      </svg>
+      <img src="/images/kick-logo.png" alt="Kick" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
     ),
     color: "#53fc18",
     description: "Kde streamuju skoro každý den!"
@@ -65,12 +63,12 @@ const SOCIAL_LINKS = [
     name: "Steam Trade",
     url: "https://steamcommunity.com/tradeoffer/new/?partner=1313277636&token=dy9kuPJg",
     svgIcon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 0a12 12 0 0 0-1.42 23.916l.286-4.043c.12-.04.24-.08.36-.12l.142.06c.45.19 1.28.32 1.28.32s-.03-1.15-.03-1.15l-1.36-.57a2.53 2.53 0 0 1-1.53-2.35c0-1.39 1.13-2.52 2.52-2.52s2.52 1.13 2.52 2.52a2.53 2.53 0 0 1-1.53 2.35l-1.36.57s-.03 1.15-.03 1.15 1.28-.32 1.28-.32l.142-.06c.12.04.24.08.36.12l.286 4.043A12 12 0 0 0 12 0zm0 14.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5z"/>
-      </svg>
+      <img src="/images/steam-logo.png" alt="Steam" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
     ),
     color: "#00adee",
     description: "Můj Steam trade link pro nabídky."
+  }
+abídky."
   }
 ];
 
