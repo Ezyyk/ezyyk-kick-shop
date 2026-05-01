@@ -15,7 +15,6 @@ const POINTS = {
   NEW_SUB: 500,
   RENEWAL_SUB: 500,
   GIFTED_SUB: 500,
-  KICKS_GIFTED: 500,
 };
 
 // ========== BOT COMMAND HANDLERS ==========
@@ -157,13 +156,16 @@ async function handleKicksGifted(payload: Record<string, unknown>) {
   const giftName = (gift?.name as string) || '';
   if (!username) return;
 
+  // Award 1 point per 1 Kick (as requested: 100 kicks = 100 points)
+  const pointsAwarded = amount;
+
   await findOrCreateUserByName(username);
-  await addPointsByName(username, POINTS.KICKS_GIFTED);
-  await logBotEvent('kicks.gifted', username, sender.user_id as number, POINTS.KICKS_GIFTED, `${amount} kicks - ${giftName}`);
+  await addPointsByName(username, pointsAwarded);
+  await logBotEvent('kicks.gifted', username, sender.user_id as number, pointsAwarded, `${amount} kicks - ${giftName}`);
 
   const chatroomId = payload.chatroom_id as string | number | undefined;
-  await sendChatMessage(`⚡ @${username} poslal Kicks (${giftName})! +${POINTS.KICKS_GIFTED} bodů! 💜`, undefined, chatroomId);
-  console.log(`[BOT] Kicks gifted: ${username} sent ${amount} kicks (${giftName}) +${POINTS.KICKS_GIFTED} points`);
+  await sendChatMessage(`⚡ @${username} daroval Kicks (${giftName}, ${amount}x)! +${pointsAwarded} bodů! 💜`, undefined, chatroomId);
+  console.log(`[BOT] Kicks gifted: ${username} sent ${amount} kicks (${giftName}) +${pointsAwarded} points`);
 }
 
 // ========== MAIN WEBHOOK HANDLER ==========

@@ -83,8 +83,8 @@ export default function Home() {
               <div style={{ background: "rgba(0, 229, 255, 0.1)", padding: "1rem", borderRadius: "50%", border: "1px solid rgba(0, 229, 255, 0.2)" }}>
                 <Zap size={32} color="#00e5ff" />
               </div>
-              <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Poslání Kicks</h3>
-              <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.4 }}>Za zaslání Kicks tě čeká jednorázový bonus <strong style={{ color: "var(--text-primary)" }}>500 bodů</strong>.</p>
+              <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Darování Kicks</h3>
+              <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.4 }}>Za každých <strong style={{ color: "var(--text-primary)" }}>100 Kicks</strong> získáš <strong style={{ color: "var(--text-primary)" }}>100 bodů</strong>.</p>
             </div>
           </div>
         </section>

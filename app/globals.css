@@ -865,3 +865,34 @@ a:hover {
   min-width: 30px;
   text-align: center;
 }
+
+.footer {
+  width: 100%;
+  padding: 2rem 0;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(9, 9, 11, 0.5);
+  margin-top: auto;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-left: 1.5rem;
+  transition: var(--transition);
+}
+
+.footer-link:hover {
+  color: var(--text-primary);
+}
+
+.copyright {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}

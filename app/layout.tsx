@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   description: "Sleduj stream ezyyk na Kicku, sbírej body a vyměň je za skvělé odměny!",
 };
 
+import Footer from "@/components/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,6 +28,7 @@ export default function RootLayout({
       <body>
         <Providers>
           {children}
+          <Footer />
         </Providers>
         <Analytics />
         <SpeedInsights />
