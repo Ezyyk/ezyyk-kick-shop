@@ -95,7 +95,7 @@ export default function CodesPage() {
         {/* EXPLANATION SECTION */}
         <section style={{ width: "100%", marginTop: "4rem" }}>
           <h2 style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-            <Info size={24} color="var(--accent-primary)" /> Jak získávat body?
+            <Info size={24} color="var(--accent-primary)" /> Jak získávat kódy?
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", maxWidth: "800px", margin: "0 auto" }}>
             <div className="glass-panel tutorial-card code-drop">
