@@ -48,7 +48,7 @@ interface AdminGiveaway {
   ticket_holders: { user_name: string; count: number }[];
 }
 
-type Tab = "purchases" | "users" | "items" | "giveaways";
+type Tab = "purchases" | "users" | "items" | "giveaways" | "bot";
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -347,6 +347,12 @@ export default function AdminPage() {
             onClick={() => setActiveTab("giveaways")}
           >
             <Gift size={16} /> Giveaways
+          </button>
+          <button
+            className={`admin-tab ${activeTab === "bot" ? "active" : ""}`}
+            onClick={() => setActiveTab("bot")}
+          >
+            <MessageSquare size={16} /> Bot & Kódy
           </button>
         </div>
 
@@ -713,6 +719,53 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+
+        {/* BOT TAB */}
+        {activeTab === "bot" && (
+          <div className="admin-panel">
+            <div className="admin-section-header">
+              <h2><MessageSquare size={20} /> Bot & Kódy</h2>
+            </div>
+            
+            <div className="glass-panel" style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div>
+                <h3 style={{ marginBottom: "0.5rem" }}>Manual Code Drop</h3>
+                <p style={{ color: "#aaa", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                  Tímto tlačítkem okamžitě vygeneruješ nový 5místný kód, odešleš ho do Kick chatu a deaktivuješ všechny předchozí kódy.
+                </p>
+                <button 
+                  className="admin-btn admin-btn-primary" 
+                  onClick={async () => {
+                    if (!confirm("Opravdu chceš odeslat nový kód do chatu?")) return;
+                    try {
+                      const res = await fetch("/api/admin/bot/drop-code", { method: "POST" });
+                      if (res.ok) {
+                        const data = await res.json();
+                        alert(`Kód [ ${data.code} ] byl úspěšně odeslán do chatu!`);
+                      } else {
+                        const data = await res.json();
+                        alert("Chyba: " + (data.error || "Nepodařilo se odeslat kód"));
+                      }
+                    } catch (e) {
+                      alert("Chyba připojení");
+                    }
+                  }}
+                  style={{ padding: "1rem 2rem", fontSize: "1rem" }}
+                >
+                  <Ticket size={18} /> Odeslat náhodný kód do chatu
+                </button>
+              </div>
+
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1.5rem" }}>
+                <h3 style={{ marginBottom: "0.5rem" }}>Ostatní nastavení</h3>
+                <p style={{ color: "#aaa", fontSize: "0.9rem" }}>
+                  V budoucnu zde přibudou další ovládací prvky pro bota.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
