@@ -89,7 +89,7 @@ export default function SocialsPage() {
             boxShadow: "0 0 30px rgba(138, 43, 226, 0.3)"
           }}>
             <img 
-              src="https://img.kick.com/v1/user_assets/users/25633/profile_image/27a9b0c0-6d9b-4e1b-b2d8-2c1dc7d045b8-1777648305685.png" 
+              src="/images/avatar.png" 
               alt="Ezyyk" 
               style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
             />
