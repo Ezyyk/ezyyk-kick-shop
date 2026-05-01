@@ -618,6 +618,13 @@ a:hover {
   box-shadow: 0 0 15px rgba(255, 68, 68, 0.15) !important;
 }
 
+.header-activate-btn:hover {
+  color: var(--accent-secondary) !important;
+  border-color: rgba(138, 43, 226, 0.4) !important;
+  background: rgba(138, 43, 226, 0.08) !important;
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.2) !important;
+}
+
 /* ===== LEADERBOARD ===== */
 .lb-section {
   max-width: 800px;

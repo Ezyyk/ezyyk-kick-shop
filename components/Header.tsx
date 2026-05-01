@@ -67,6 +67,7 @@ export default function Header() {
             <Link href="/codes">
               <Button 
                 variant="secondary" 
+                className="header-activate-btn"
                 style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", gap: "0.5rem" }}
               >
                 <Ticket size={16} /> Aktivovat kód
