@@ -625,6 +625,17 @@ a:hover {
   box-shadow: 0 0 15px rgba(138, 43, 226, 0.2) !important;
 }
 
+.header-user-profile {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.header-user-profile:hover {
+  transform: translateX(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.1);
+}
+
 /* ===== LEADERBOARD ===== */
 .lb-section {
   max-width: 800px;

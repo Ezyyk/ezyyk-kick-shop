@@ -79,7 +79,11 @@ export default function Header() {
               <span>{points}</span> bodů
             </div>
             
-            <Link href="/profile" style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none", background: "var(--glass-bg)", padding: "0.4rem 1rem 0.4rem 0.4rem", borderRadius: "50px", border: "1px solid var(--glass-border)" }}>
+            <Link 
+              href="/profile" 
+              className="header-user-profile"
+              style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none", background: "var(--glass-bg)", padding: "0.4rem 1rem 0.4rem 0.4rem", borderRadius: "50px", border: "1px solid var(--glass-border)" }}
+            >
               {session.user?.image ? (
                 <img src={session.user.image} alt="Avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
               ) : (
