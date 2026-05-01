@@ -442,3 +442,25 @@ export async function checkAndDrawGiveaways() {
   
   return drawnCount;
 }
+export async function getUserGiveawayHistory(userName: string) {
+  const db = await getDb();
+  return await db.all(`
+    SELECT g.*, COUNT(gt.id) as tickets_bought, MIN(gt.purchased_at) as first_ticket_at
+    FROM giveaways g
+    JOIN giveaway_tickets gt ON g.id = gt.giveaway_id
+    WHERE gt.user_name = ?
+    GROUP BY g.id
+    ORDER BY g.created_at DESC
+  `, userName);
+}
+
+export async function getAllTicketHistory() {
+  const db = await getDb();
+  return await db.all(`
+    SELECT gt.*, g.title as giveaway_title
+    FROM giveaway_tickets gt
+    JOIN giveaways g ON gt.giveaway_id = g.id
+    ORDER BY gt.purchased_at DESC
+    LIMIT 500
+  `);
+}

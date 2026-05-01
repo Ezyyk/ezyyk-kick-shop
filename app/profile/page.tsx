@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [purchases, setPurchases] = useState<any[]>([]);
+  const [giveawayHistory, setGiveawayHistory] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -27,6 +28,9 @@ export default function ProfilePage() {
           }
           if (data.purchases) {
             setPurchases(data.purchases);
+          }
+          if (data.giveawayHistory) {
+            setGiveawayHistory(data.giveawayHistory);
           }
         })
         .catch((e) => console.error("Chyba při načítání profilu", e));
@@ -168,6 +172,53 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        <section className="glass-panel" style={{ width: "100%", padding: "3rem", textAlign: "left", marginTop: "2rem" }}>
+          <h2 style={{ marginBottom: "1.5rem", fontSize: "1.25rem" }}>Historie Giveaways</h2>
+          {giveawayHistory.length === 0 ? (
+            <p style={{ color: "var(--text-secondary)" }}>Zatím žádná účast v giveaways.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {giveawayHistory.map(g => {
+                const isWinner = g.winner_name === session?.user?.name;
+                const isEnded = g.status === "ended";
+                
+                return (
+                  <div key={g.id} style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "1rem",
+                    background: "rgba(0,0,0,0.3)",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--glass-border)",
+                    position: "relative",
+                    overflow: "hidden"
+                  }}>
+                    {isWinner && (
+                      <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: "4px", background: "#FFD700" }}></div>
+                    )}
+                    <div>
+                      <strong style={{ display: "block", color: isWinner ? "#FFD700" : "var(--text-primary)" }}>
+                        {g.title} {isWinner && "🏆 VÝHRA"}
+                      </strong>
+                      <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                        Zakoupeno {g.tickets_bought} ticketů
+                      </span>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: "0.9rem", color: isEnded ? (isWinner ? "#FFD700" : "#ff4444") : "var(--accent-secondary)" }}>
+                        {isEnded ? (isWinner ? "Vyhrál jsi!" : "Nevyhrál jsi") : "Probíhá..."}
+                      </div>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                        {new Date(g.first_ticket_at.replace(" ", "T") + "Z").toLocaleDateString("cs-CZ")}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>

@@ -16,11 +16,18 @@ export async function GET() {
   const userName = session.user.name as string;
   const user = await getUserByName(userName);
   let purchases = [];
+  let giveawayHistory = [];
   if (user) {
+    const { getUserPurchases, getUserGiveawayHistory } = await import("@/lib/db");
     purchases = await getUserPurchases(user.id);
+    giveawayHistory = await getUserGiveawayHistory(userName);
   }
 
-  return NextResponse.json({ tradeUrl: user?.trade_url || "", purchases });
+  return NextResponse.json({ 
+    tradeUrl: user?.trade_url || "", 
+    purchases,
+    giveawayHistory 
+  });
 }
 
 export async function POST(req: Request) {

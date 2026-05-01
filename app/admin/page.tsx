@@ -49,7 +49,7 @@ interface AdminGiveaway {
   ticket_holders: { user_name: string; count: number }[];
 }
 
-type Tab = "purchases" | "users" | "items" | "giveaways" | "bot";
+type Tab = "purchases" | "users" | "items" | "giveaways" | "bot" | "ticket_history";
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -63,6 +63,7 @@ export default function AdminPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [giveaways, setGiveaways] = useState<AdminGiveaway[]>([]);
+  const [ticketHistory, setTicketHistory] = useState<any[]>([]);
 
   // New / Edit item form
   const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
@@ -121,11 +122,12 @@ export default function AdminPage() {
 
   const loadData = async () => {
     try {
-      const [usersRes, purchasesRes, itemsRes, gwRes] = await Promise.all([
+      const [usersRes, purchasesRes, itemsRes, gwRes, ticketsRes] = await Promise.all([
         fetch("/api/admin/users"),
         fetch("/api/admin/purchases"),
         fetch("/api/admin/items"),
         fetch("/api/admin/giveaways"),
+        fetch("/api/admin/giveaways/tickets"),
       ]);
       if (usersRes.ok) {
         const data = await usersRes.json();
@@ -142,6 +144,10 @@ export default function AdminPage() {
       if (gwRes.ok) {
         const data = await gwRes.json();
         setGiveaways(data);
+      }
+      if (ticketsRes.ok) {
+        const data = await ticketsRes.json();
+        setTicketHistory(data);
       }
     } catch (e) {
       console.error("Chyba při načítání dat", e);
@@ -386,6 +392,12 @@ export default function AdminPage() {
             onClick={() => setActiveTab("giveaways")}
           >
             <Gift size={16} /> Giveaways
+          </button>
+          <button
+            className={`admin-tab ${activeTab === "ticket_history" ? "active" : ""}`}
+            onClick={() => setActiveTab("ticket_history")}
+          >
+            <Ticket size={16} /> Historie ticketů
           </button>
           <button
             className={`admin-tab ${activeTab === "bot" ? "active" : ""}`}
@@ -1057,6 +1069,45 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+        {/* TICKET HISTORY TAB */}
+        {activeTab === "ticket_history" && (
+          <div className="admin-panel">
+            {ticketHistory.length === 0 ? (
+              <div className="admin-empty">Žádná historie ticketů</div>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Datum</th>
+                      <th>Uživatel</th>
+                      <th>Giveaway</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ticketHistory.map((th, i) => (
+                      <tr key={i}>
+                        <td className="admin-td-date">
+                          {new Date(th.purchased_at.replace(" ", "T") + "Z").toLocaleString("cs-CZ")}
+                        </td>
+                        <td>
+                          <button className="admin-link-btn" onClick={() => {
+                            const user = users.find(u => u.name === th.user_name);
+                            if (user) openUserDetail(user.id);
+                          }}>
+                            {th.user_name}
+                          </button>
+                        </td>
+                        <td>{th.giveaway_title}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
