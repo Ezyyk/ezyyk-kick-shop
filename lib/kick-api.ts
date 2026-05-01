@@ -79,15 +79,18 @@ async function getAccessToken(): Promise<string | null> {
   // Try the dedicated bot token first
   const botToken = process.env.KICK_BOT_TOKEN;
   if (botToken) {
+    console.log('[KICK-API] Using BOT token');
     return botToken;
   }
 
   // Try the broadcaster's stored token next
   const broadcasterToken = process.env.KICK_BROADCASTER_TOKEN;
   if (broadcasterToken) {
+    console.log('[KICK-API] Using BROADCASTER token');
     return broadcasterToken;
   }
   
+  console.log('[KICK-API] Using APP token');
   // Fall back to app access token
   return await getAppAccessToken();
 }
@@ -113,11 +116,10 @@ export async function sendChatMessage(content: string, broadcasterUserId?: numbe
       broadcaster_user_id: buid,
       content: content,
       type: 'user',
+      chat_id: chatId || String(buid), // Fallback to broadcaster's user ID as chat ID
     };
-    if (chatId) {
-      payload.chat_id = chatId;
-    }
 
+    console.log(`[KICK-API] Using token: ${token.substring(0, 5)}...`);
     console.log(`[KICK-API] Sending chat payload:`, payload);
 
     const response = await fetch('https://api.kick.com/public/v1/chat', {
