@@ -1012,7 +1012,8 @@ a:hover {
 
 .gw-card:hover {
   border-color: var(--accent-primary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
 .gw-ended {
@@ -1040,12 +1041,12 @@ a:hover {
 }
 
 @keyframes gwImageFloat {
-  0%, 100% { transform: scale(var(--image-scale, 1)) rotate(8deg) translateY(0); }
-  50% { transform: scale(var(--image-scale, 1)) rotate(8deg) translateY(-5px); }
+  0%, 100% { transform: scale(var(--image-scale, 1)) rotate(4deg) translateY(0); }
+  50% { transform: scale(var(--image-scale, 1)) rotate(4deg) translateY(-3px); }
 }
 
 .gw-card:hover .gw-image {
-  animation: gwImageFloat 2.5s ease-in-out infinite;
+  animation: gwImageFloat 3s ease-in-out infinite;
 }
 
 .gw-title {
