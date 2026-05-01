@@ -97,7 +97,7 @@ export default function CodesPage() {
           <h2 style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
             <Info size={24} color="var(--accent-primary)" /> Jak získávat kódy?
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", maxWidth: "800px", margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem", maxWidth: "450px", margin: "0 auto" }}>
             <div className="glass-panel tutorial-card code-drop">
               <div style={{ background: "rgba(255, 152, 0, 0.15)", padding: "1rem", borderRadius: "50%", border: "1px solid rgba(255, 152, 0, 0.3)" }}>
                 <Ticket size={32} color="#FF9800" />
