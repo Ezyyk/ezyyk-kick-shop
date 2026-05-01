@@ -664,11 +664,24 @@ a:hover {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
-.header-user-profile:hover {
-  transform: translateX(-5px) scale(1.03);
-  background: rgba(138, 43, 226, 0.08) !important;
+.social-link-card {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.social-link-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.08) !important;
   border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 20px rgba(138, 43, 226, 0.25);
+  box-shadow: 0 10px 30px rgba(138, 43, 226, 0.15) !important;
+}
+
+.social-link-card:hover h3 {
+  color: var(--accent-secondary) !important;
+}
+
+/* Individual colors for social cards */
+.social-link-card:hover .social-icon-box {
+  transform: scale(1.1);
 }
 
 .points-display-link {

@@ -113,7 +113,7 @@ export default function SocialsPage() {
                 overflow: "hidden"
               }}
             >
-              <div style={{ 
+              <div className="social-icon-box" style={{ 
                 background: `${link.color}20`, 
                 color: link.color,
                 padding: "0.8rem",
@@ -121,7 +121,8 @@ export default function SocialsPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                border: `1px solid ${link.color}40`
+                border: `1px solid ${link.color}40`,
+                transition: "all 0.3s ease"
               }}>
                 {link.icon}
               </div>
@@ -132,19 +133,6 @@ export default function SocialsPage() {
               </div>
               
               <ExternalLink size={18} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
-              
-              {/* HOVER GLOW EFFECT */}
-              <style jsx>{`
-                .social-link-card:hover {
-                  transform: translateY(-3px) scale(1.02);
-                  border-color: ${link.color}60 !important;
-                  box-shadow: 0 10px 25px ${link.color}15 !important;
-                  background: rgba(255, 255, 255, 0.05) !important;
-                }
-                .social-link-card:hover h3 {
-                  color: ${link.color};
-                }
-              `}</style>
             </a>
           ))}
         </div>
