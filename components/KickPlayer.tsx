@@ -92,7 +92,7 @@ export default function KickPlayer({ channelName, onPing }: KickPlayerProps) {
       )}
       
       <iframe
-        src={`https://player.kick.com/${channelName}`}
+        src={`https://player.kick.com/${channelName}?parent=${typeof window !== 'undefined' ? window.location.hostname : 'ezyyk.com'}`}
         frameBorder="0"
         scrolling="no"
         allowFullScreen={true}
