@@ -42,9 +42,7 @@
   transition: transform 0.3s ease;
 }
 
-.item:hover .image {
-  transform: scale(1.05);
-}
+/* hover scale removed to allow custom manual scale */
 
 .stock {
   font-size: 0.85rem;

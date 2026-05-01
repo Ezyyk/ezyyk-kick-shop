@@ -34,6 +34,7 @@ interface ShopItem {
   image_url: string;
   category: string;
   stock: number;
+  image_scale: number;
 }
 
 interface AdminGiveaway {
@@ -45,6 +46,7 @@ interface AdminGiveaway {
   ends_at: string;
   winner_name: string | null;
   status: string;
+  image_scale: number;
   total_tickets: number;
   ticket_holders: { user_name: string; count: number }[];
 }
@@ -66,12 +68,12 @@ export default function AdminPage() {
   const [ticketHistory, setTicketHistory] = useState<any[]>([]);
 
   // New / Edit item form
-  const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1 });
+  const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0 });
   const [showForm, setShowForm] = useState(false);
   const [isEditingItem, setIsEditingItem] = useState(false);
 
   // New giveaway form
-  const [newGiveaway, setNewGiveaway] = useState({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "" });
+  const [newGiveaway, setNewGiveaway] = useState({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "", imageScale: 1.0 });
   const [showGwForm, setShowGwForm] = useState(false);
   const [isEditingGw, setIsEditingGw] = useState(false);
 
@@ -186,7 +188,8 @@ export default function AdminPage() {
       cost: item.cost,
       imageUrl: item.image_url || "",
       category: item.category || "other",
-      stock: item.stock ?? -1
+      stock: item.stock ?? -1,
+      imageScale: item.image_scale ?? 1.0
     });
     setIsEditingItem(true);
     setShowForm(true);
@@ -643,8 +646,24 @@ export default function AdminPage() {
                   <ImageUploader
                     label="Obrázek itemu"
                     value={newItem.imageUrl}
+                    imageScale={newItem.imageScale}
                     onChange={(url) => setNewItem({ ...newItem, imageUrl: url })}
                   />
+                  <div className="admin-form-group admin-form-wide">
+                    <label style={{ display: "flex", justifyContent: "space-between" }}>
+                      Velikost obrázku (Zoom)
+                      <span>{newItem.imageScale.toFixed(1)}x</span>
+                    </label>
+                    <input 
+                      type="range" 
+                      min="0.1" 
+                      max="2" 
+                      step="0.1" 
+                      value={newItem.imageScale} 
+                      onChange={(e) => setNewItem({ ...newItem, imageScale: parseFloat(e.target.value) })}
+                      style={{ width: "100%", marginTop: "0.5rem" }}
+                    />
+                  </div>
                 </div>
                 <div className="admin-form-actions">
                   <button type="submit" className="admin-btn admin-btn-primary">
@@ -672,7 +691,13 @@ export default function AdminPage() {
                   <div key={item.id} className="shop-list-row">
                     <div className="shop-col-item">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.title} className="shop-item-thumb" />
+                        <div className="shop-item-thumb" style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title} 
+                            style={{ width: "100%", height: "100%", objectFit: "contain", transform: `scale(${item.image_scale || 1.0})` }} 
+                          />
+                        </div>
                       ) : (
                         <div className="shop-item-thumb" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <Package size={20} opacity={0.3} />
@@ -749,7 +774,7 @@ export default function AdminPage() {
                     body: JSON.stringify({ ...newGiveaway, endsAt: utcDate }),
                   });
                   if (res.ok) {
-                    setNewGiveaway({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "" });
+                    setNewGiveaway({ id: "", title: "", description: "", ticketCost: 100, endsAt: "", imageUrl: "", imageScale: 1.0 });
                     setShowGwForm(false);
                     setIsEditingGw(false);
                     loadData();
@@ -782,8 +807,24 @@ export default function AdminPage() {
                   <ImageUploader
                     label="Obrázek giveaway"
                     value={newGiveaway.imageUrl}
+                    imageScale={newGiveaway.imageScale}
                     onChange={(url) => setNewGiveaway({ ...newGiveaway, imageUrl: url })}
                   />
+                  <div className="admin-form-group admin-form-wide">
+                    <label style={{ display: "flex", justifyContent: "space-between" }}>
+                      Velikost obrázku (Zoom)
+                      <span>{newGiveaway.imageScale.toFixed(1)}x</span>
+                    </label>
+                    <input 
+                      type="range" 
+                      min="0.1" 
+                      max="2" 
+                      step="0.1" 
+                      value={newGiveaway.imageScale} 
+                      onChange={(e) => setNewGiveaway({ ...newGiveaway, imageScale: parseFloat(e.target.value) })}
+                      style={{ width: "100%", marginTop: "0.5rem" }}
+                    />
+                  </div>
                 </div>
                 <div className="admin-form-actions">
                   <button type="submit" className="admin-btn admin-btn-primary">
@@ -811,7 +852,13 @@ export default function AdminPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr 1fr", width: "100%", alignItems: "center" }}>
                       <div className="shop-col-item">
                         {gw.image_url ? (
-                          <img src={gw.image_url} alt={gw.title} className="shop-item-thumb" />
+                          <div className="shop-item-thumb" style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <img 
+                              src={gw.image_url} 
+                              alt={gw.title} 
+                              style={{ width: "100%", height: "100%", objectFit: "contain", transform: `scale(${gw.image_scale || 1.0})` }} 
+                            />
+                          </div>
                         ) : (
                           <div className="shop-item-thumb" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <Gift size={20} opacity={0.3} />
@@ -876,7 +923,8 @@ export default function AdminPage() {
                             description: gw.description || "",
                             ticketCost: gw.ticket_cost,
                             endsAt: localIso,
-                            imageUrl: gw.image_url || ""
+                            imageUrl: gw.image_url || "",
+                            imageScale: gw.image_scale ?? 1.0
                           });
                           setIsEditingGw(true);
                           setShowGwForm(true);

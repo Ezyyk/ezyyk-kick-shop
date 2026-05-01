@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const { id, title, description, ticketCost, endsAt, imageUrl } = await req.json();
+  const { id, title, description, ticketCost, endsAt, imageUrl, imageScale } = await req.json();
   
   if (!id || !title || !ticketCost || !endsAt) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -53,8 +53,8 @@ export async function POST(req: Request) {
   
   const db = await getDb();
   await db.run(
-    'INSERT INTO giveaways (id, title, description, image_url, ticket_cost, ends_at) VALUES (?, ?, ?, ?, ?, ?)',
-    id, title, description || "", imageUrl || "", ticketCost, endsAt
+    'INSERT INTO giveaways (id, title, description, image_url, ticket_cost, ends_at, image_scale) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    id, title, description || "", imageUrl || "", ticketCost, endsAt, imageScale !== undefined ? imageScale : 1.0
   );
   
   return NextResponse.json({ success: true });
@@ -66,7 +66,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const { id, title, description, ticketCost, endsAt, imageUrl } = await req.json();
+  const { id, title, description, ticketCost, endsAt, imageUrl, imageScale } = await req.json();
   
   if (!id || !title || !ticketCost || !endsAt) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -74,8 +74,8 @@ export async function PUT(req: Request) {
   
   const db = await getDb();
   await db.run(
-    'UPDATE giveaways SET title = ?, description = ?, image_url = ?, ticket_cost = ?, ends_at = ? WHERE id = ?',
-    title, description || "", imageUrl || "", ticketCost, endsAt, id
+    'UPDATE giveaways SET title = ?, description = ?, image_url = ?, ticket_cost = ?, ends_at = ?, image_scale = ? WHERE id = ?',
+    title, description || "", imageUrl || "", ticketCost, endsAt, imageScale !== undefined ? imageScale : 1.0, id
   );
   
   return NextResponse.json({ success: true });

@@ -6,9 +6,10 @@ interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
   label?: string;
+  imageScale?: number;
 }
 
-export default function ImageUploader({ value, onChange, label = "Obrázek" }: ImageUploaderProps) {
+export default function ImageUploader({ value, onChange, label = "Obrázek", imageScale = 1.0 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,8 +92,8 @@ export default function ImageUploader({ value, onChange, label = "Obrázek" }: I
       <label>{label} (Drag & Drop / Ctrl+V / Kliknutí)</label>
       
       {value ? (
-        <div style={{ position: "relative", width: "100%", maxWidth: "300px", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--glass-border)" }}>
-          <img src={value} alt="Náhled" style={{ width: "100%", height: "auto", display: "block" }} />
+        <div style={{ position: "relative", width: "100%", maxWidth: "300px", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--glass-border)", aspectRatio: "1/1", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <img src={value} alt="Náhled" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", transform: `scale(${imageScale})`, transition: "transform 0.2s ease" }} />
           <button
             type="button"
             onClick={() => onChange("")}

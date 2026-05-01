@@ -11,10 +11,11 @@ interface ShopItemProps {
   userPoints: number;
   imageUrl?: string;
   stock?: number;
+  imageScale?: number;
   onBuy: (id: string, cost: number) => void;
 }
 
-export default function ShopItem({ id, title, description, cost, userPoints, imageUrl, stock = -1, onBuy }: ShopItemProps) {
+export default function ShopItem({ id, title, description, cost, userPoints, imageUrl, stock = -1, imageScale = 1.0, onBuy }: ShopItemProps) {
   const canAfford = userPoints >= cost;
   const isSoldOut = stock === 0;
 
@@ -24,7 +25,12 @@ export default function ShopItem({ id, title, description, cost, userPoints, ima
       
       {imageUrl ? (
         <div className={styles.imageWrapper}>
-          <img src={imageUrl} alt={title} className={styles.image} />
+          <img 
+            src={imageUrl} 
+            alt={title} 
+            className={styles.image} 
+            style={{ transform: `scale(${imageScale})` }} 
+          />
         </div>
       ) : (
         <div className={styles.imagePlaceholder}>

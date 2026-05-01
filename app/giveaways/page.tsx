@@ -150,9 +150,18 @@ export default function GiveawaysPage() {
 
                 return (
                   <div key={gw.id} className={`gw-card glass-panel ${!isActive ? "gw-ended" : ""}`}>
-                    {/* Icon area */}
-                    <div className="gw-icon-area">
-                      <Gift size={32} color="var(--accent-secondary)" />
+                    {/* Image area */}
+                    <div className="gw-image-wrapper">
+                      {gw.image_url ? (
+                        <img 
+                          src={gw.image_url} 
+                          alt={gw.title} 
+                          className="gw-image" 
+                          style={{ transform: `scale(${gw.image_scale || 1.0})` }} 
+                        />
+                      ) : (
+                        <Gift size={32} color="var(--accent-secondary)" />
+                      )}
                     </div>
 
                     <h3 className="gw-title">{gw.title}</h3>

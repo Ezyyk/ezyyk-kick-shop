@@ -82,6 +82,7 @@ export async function getDb() {
       image_url TEXT,
       category TEXT DEFAULT 'other',
       stock INTEGER DEFAULT -1,
+      image_scale REAL DEFAULT 1.0,
       created_at DATETIME DEFAULT (datetime('now'))
     );
   `);
@@ -96,6 +97,7 @@ export async function getDb() {
       ends_at DATETIME NOT NULL,
       winner_name TEXT,
       status TEXT DEFAULT 'active',
+      image_scale REAL DEFAULT 1.0,
       created_at DATETIME DEFAULT (datetime('now'))
     );
   `);
@@ -158,6 +160,14 @@ export async function getDb() {
 
   try {
     await wrapper.exec('ALTER TABLE purchase_history ADD COLUMN is_sent BOOLEAN DEFAULT 0');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE shop_items ADD COLUMN image_scale REAL DEFAULT 1.0');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE giveaways ADD COLUMN image_scale REAL DEFAULT 1.0');
   } catch (e) {}
 
   return wrapper;
@@ -357,19 +367,19 @@ export async function getShopItems() {
   return await db.all('SELECT * FROM shop_items ORDER BY created_at DESC');
 }
 
-export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1) {
+export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1, imageScale: number = 1.0) {
   const db = await getDb();
   await db.run(
-    'INSERT INTO shop_items (id, title, description, cost, image_url, category, stock) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    id, title, description, cost, imageUrl, category, stock
+    'INSERT INTO shop_items (id, title, description, cost, image_url, category, stock, image_scale) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    id, title, description, cost, imageUrl, category, stock, imageScale
   );
 }
 
-export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1) {
+export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1, imageScale: number = 1.0) {
   const db = await getDb();
   await db.run(
-    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ?, stock = ? WHERE id = ?',
-    title, description, cost, imageUrl, category, stock, id
+    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ?, stock = ?, image_scale = ? WHERE id = ?',
+    title, description, cost, imageUrl, category, stock, imageScale, id
   );
 }
 
