@@ -205,6 +205,24 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeletePurchase = async (id: number) => {
+    if (!confirm("Opravdu smazat tento záznam z historie?")) return;
+    try {
+      const res = await fetch("/api/admin/purchases", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        setPurchases(purchases.filter(p => p.id !== id));
+      } else {
+        alert("Chyba při mazání nákupu");
+      }
+    } catch (e) {
+      console.error("Chyba při mazání nákupu", e);
+    }
+  };
+
 
   const handleUpdatePoints = async () => {
     if (!selectedUser) return;
@@ -401,9 +419,12 @@ export default function AdminPage() {
                         </td>
                         <td>{p.item_title}</td>
                         <td className="admin-td-cost">{p.cost.toLocaleString()} bodů</td>
-                        <td>
+                        <td className="admin-td-actions" style={{ display: "flex", gap: "0.5rem" }}>
                           <button className="admin-btn-small" onClick={() => openUserDetail(p.user_id)}>
                             Profil
+                          </button>
+                          <button className="admin-btn-delete" onClick={() => handleDeletePurchase(p.id)} title="Smazat" style={{ padding: "0.25rem 0.5rem" }}>
+                            <Trash2 size={14} />
                           </button>
                         </td>
                       </tr>

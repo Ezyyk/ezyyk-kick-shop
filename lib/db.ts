@@ -340,6 +340,11 @@ export async function getUserPurchases(userId: string) {
   );
 }
 
+export async function deletePurchase(id: number) {
+  const db = await getDb();
+  await db.run('DELETE FROM purchase_history WHERE id = ?', id);
+}
+
 export async function getShopItems() {
   const db = await getDb();
   return await db.all('SELECT * FROM shop_items ORDER BY created_at DESC');

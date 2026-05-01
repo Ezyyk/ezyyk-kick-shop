@@ -19,3 +19,22 @@ export async function GET() {
   const purchases = await getPurchaseHistory();
   return NextResponse.json({ purchases });
 }
+
+export async function DELETE(request: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  try {
+    const { id } = await request.json();
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+    
+    const { deletePurchase } = await import("@/lib/db");
+    await deletePurchase(id);
+    
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
