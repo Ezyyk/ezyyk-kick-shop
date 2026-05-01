@@ -6,6 +6,7 @@ import {
   logBotEvent,
   getSetting,
   createRedeemCode,
+  deactivateOldCodes,
 } from '@/lib/db';
 import { sendChatMessage } from '@/lib/kick-api';
 
@@ -65,11 +66,14 @@ export async function POST(request: Request) {
     if (isLive) {
       // 20% chance to drop a code every 5 minutes (~once per 25 minutes on average)
       if (Math.random() < 0.20) {
+        // Deactivate any previous unredeemed codes first
+        await deactivateOldCodes();
+
         const code = generateRandomCode(5);
         await createRedeemCode(code, 10);
         
         const chatroomId = await getSetting('last_chatroom_id');
-        await sendChatMessage(`🎁 CODE DROP! První kdo napíše kód [ ${code} ] na webu ezyyk.com získá 10 bodů! ⚡`, undefined, chatroomId || undefined);
+        await sendChatMessage(`🎁 CODE DROP! První kdo napíše kód [ ${code} ] na ezyyk.com/codes získá 10 bodů! ⚡`, undefined, chatroomId || undefined);
         await logBotEvent('code.drop', 'system', null, 0, `Code: ${code}`);
         codeDropped = true;
         console.log(`[BOT-TICK] 🎁 Code dropped: ${code}`);

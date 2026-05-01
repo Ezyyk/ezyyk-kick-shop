@@ -180,6 +180,11 @@ export async function createRedeemCode(code: string, points: number = 10) {
   await db.run('INSERT INTO redeem_codes (code, points) VALUES (?, ?)', code, points);
 }
 
+export async function deactivateOldCodes() {
+  const db = await getDb();
+  await db.run('UPDATE redeem_codes SET is_used = 1 WHERE is_used = 0');
+}
+
 export async function redeemCode(code: string, userId: string) {
   const db = await getDb();
   const existingCode = await db.get('SELECT * FROM redeem_codes WHERE code = ? AND is_used = 0', code);
