@@ -25,6 +25,7 @@ export default function GiveawaysPage() {
   const [message, setMessage] = useState("");
   const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({});
   const [points, setPoints] = useState(0);
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
     fetchGiveaways();
@@ -33,6 +34,11 @@ export default function GiveawaysPage() {
     const interval = setInterval(fetchGiveaways, 30000);
     return () => clearInterval(interval);
   }, [session]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchGiveaways = async () => {
     try {
@@ -80,13 +86,16 @@ export default function GiveawaysPage() {
 
   const getTimeLeft = (endsAt: string) => {
     const date = endsAt.includes("T") && !endsAt.endsWith("Z") ? endsAt + "Z" : endsAt;
-    const diff = new Date(date).getTime() - Date.now();
+    const diff = new Date(date).getTime() - now;
     if (diff <= 0) return "Vylosováno";
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+
     if (d > 0) return `${d}d ${h}h`;
     if (h > 0) return `${h}h ${m}m`;
+    if (m < 10) return `${m}m ${s}s`;
     return `${m}m`;
   };
 
@@ -135,7 +144,7 @@ export default function GiveawaysPage() {
             <div className="gw-grid">
               {giveaways.map(gw => {
                 const dateStr = gw.ends_at.includes("T") && !gw.ends_at.endsWith("Z") ? gw.ends_at + "Z" : gw.ends_at;
-                const isActive = gw.status === "active" && new Date(dateStr).getTime() > Date.now();
+                const isActive = gw.status === "active" && new Date(dateStr).getTime() > now;
                 const qty = ticketCounts[gw.id] || 1;
                 const totalCost = gw.ticket_cost * qty;
 
