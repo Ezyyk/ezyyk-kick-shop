@@ -193,23 +193,47 @@ export async function POST(request: NextRequest) {
     switch (eventType) {
       case 'chat.message.sent':
         console.log(`[DEBUG] Full chat payload: ${JSON.stringify(payload)}`);
+        if (payload.chatroom_id) {
+          const { setSetting } = await import('@/lib/db');
+          await setSetting('last_chatroom_id', String(payload.chatroom_id));
+        }
         await handleChatMessage(payload);
         break;
       case 'channel.subscription.new':
+        if (payload.chatroom_id) {
+          const { setSetting } = await import('@/lib/db');
+          await setSetting('last_chatroom_id', String(payload.chatroom_id));
+        }
         await handleNewSubscription(payload);
         break;
       case 'channel.subscription.renewal':
+        if (payload.chatroom_id) {
+          const { setSetting } = await import('@/lib/db');
+          await setSetting('last_chatroom_id', String(payload.chatroom_id));
+        }
         await handleSubscriptionRenewal(payload);
         break;
       case 'channel.subscription.gifts':
+        if (payload.chatroom_id) {
+          const { setSetting } = await import('@/lib/db');
+          await setSetting('last_chatroom_id', String(payload.chatroom_id));
+        }
         await handleSubscriptionGifts(payload);
         break;
       case 'kicks.gifted':
+        if (payload.chatroom_id) {
+          const { setSetting } = await import('@/lib/db');
+          await setSetting('last_chatroom_id', String(payload.chatroom_id));
+        }
         await handleKicksGifted(payload);
         break;
-      case 'livestream.status.updated':
-        console.log(`[WEBHOOK] Stream status updated: is_live=${payload.is_live}`);
+      case 'livestream.status.updated': {
+        const isLive = payload.is_live === true || payload.is_live === 'true';
+        console.log(`[WEBHOOK] Stream status updated: is_live=${isLive}`);
+        const { setSetting } = await import('@/lib/db');
+        await setSetting('is_live', isLive ? 'true' : 'false');
         break;
+      }
       default:
         console.log(`[WEBHOOK] Unhandled event type: ${eventType}`);
     }

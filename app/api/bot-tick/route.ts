@@ -4,7 +4,19 @@ import {
   addPointsByName,
   markChatPointsAwarded,
   logBotEvent,
+  getSetting,
+  createRedeemCode,
 } from '@/lib/db';
+import { sendChatMessage } from '@/lib/kick-api';
+
+function generateRandomCode(length: number = 5) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // Point values
 const CHAT_POINTS_NORMAL = 5;
@@ -44,7 +56,31 @@ export async function POST(request: Request) {
     }
 
     console.log(`[BOT-TICK] Awarded points to ${totalAwarded} active chatters`);
-    return NextResponse.json({ success: true, usersAwarded: totalAwarded });
+
+    // --- CODE DROP LOGIC ---
+    // Only if stream is live (checked via webhook)
+    const isLive = await getSetting('is_live', 'false') === 'true';
+    let codeDropped = false;
+
+    if (isLive) {
+      // 20% chance to drop a code every 5 minutes (~once per 25 minutes on average)
+      if (Math.random() < 0.20) {
+        const code = generateRandomCode(5);
+        await createRedeemCode(code, 10);
+        
+        const chatroomId = await getSetting('last_chatroom_id');
+        await sendChatMessage(`🎁 CODE DROP! První kdo napíše kód [ ${code} ] na webu ezyyk.com získá 10 bodů! ⚡`, undefined, chatroomId || undefined);
+        await logBotEvent('code.drop', 'system', null, 0, `Code: ${code}`);
+        codeDropped = true;
+        console.log(`[BOT-TICK] 🎁 Code dropped: ${code}`);
+      }
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      usersAwarded: totalAwarded,
+      codeDropped: codeDropped
+    });
   } catch (error) {
     console.error('[BOT-TICK] Error:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

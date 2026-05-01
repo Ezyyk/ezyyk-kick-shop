@@ -139,7 +139,61 @@ export async function getDb() {
     );
   `);
 
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS bot_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
+  `);
+
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS redeem_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT UNIQUE NOT NULL,
+      points INTEGER DEFAULT 10,
+      is_used BOOLEAN DEFAULT 0,
+      used_by_user_id TEXT,
+      used_at DATETIME,
+      created_at DATETIME DEFAULT (datetime('now'))
+    );
+  `);
+
   return wrapper;
+}
+
+export async function setSetting(key: string, value: string) {
+  const db = await getDb();
+  await db.run(
+    'INSERT INTO bot_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?',
+    key, value, value
+  );
+}
+
+export async function getSetting(key: string, defaultValue: string = ''): Promise<string> {
+  const db = await getDb();
+  const res = await db.get('SELECT value FROM bot_settings WHERE key = ?', key);
+  return res ? res.value : defaultValue;
+}
+
+export async function createRedeemCode(code: string, points: number = 10) {
+  const db = await getDb();
+  await db.run('INSERT INTO redeem_codes (code, points) VALUES (?, ?)', code, points);
+}
+
+export async function redeemCode(code: string, userId: string) {
+  const db = await getDb();
+  const existingCode = await db.get('SELECT * FROM redeem_codes WHERE code = ? AND is_used = 0', code);
+  
+  if (!existingCode) return { success: false, message: 'Kód je neplatný nebo již byl použit.' };
+  
+  await db.run(
+    'UPDATE redeem_codes SET is_used = 1, used_by_user_id = ?, used_at = datetime("now") WHERE code = ?',
+    userId, code
+  );
+  
+  await addPoints(userId, existingCode.points);
+  
+  return { success: true, points: existingCode.points };
 }
 
 export async function getUser(id: string) {
