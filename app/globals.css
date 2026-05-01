@@ -209,18 +209,27 @@ a:hover {
   font-weight: 800;
   background: linear-gradient(
     110deg,
-    #fff 30%,
-    rgba(255, 255, 255, 0.4) 45%,
-    #fff 50%,
-    rgba(255, 255, 255, 0.4) 55%,
-    #fff 70%
+    #ffffff 45%,
+    #ffffff 48%,
+    #ffffff 52%,
+    #ffffff 55%
+  );
+  /* The shiny glint is implemented as a white stripe moving over the text */
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,1) 35%,
+    rgba(255,255,255,0.2) 45%,
+    rgba(255,255,255,1) 50%,
+    rgba(255,255,255,0.2) 55%,
+    rgba(255,255,255,1) 65%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
-  animation: glint 4s linear infinite;
+  animation: glint 3s linear infinite;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 @keyframes glint {
