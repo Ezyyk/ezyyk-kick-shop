@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession, signOut, signIn } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { Gem, LogOut, LogIn, Home, ShoppingBag, Trophy, Gift, Ticket, Package } from "lucide-react";
+import { Gem, LogOut, LogIn, Home, ShoppingBag, Trophy, Gift, Ticket, Package, Menu, X } from "lucide-react";
 import Link from "next/link";
 import Button from "./Button";
 import { formatPoints } from "@/lib/format";
@@ -93,6 +93,7 @@ export default function Header() {
   const [points, setPoints] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
   const [prevPoints, setPrevPoints] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
 
@@ -128,133 +129,238 @@ export default function Header() {
     return () => window.removeEventListener('points-update', handleUpdate);
   }, [session, points]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
 
 
   return (
-    <header className="header" style={{ padding: "1.5rem 0" }}>
-      <div className="header-left">
-        <Link href="/" className="logo">
-          <img src="/logo.png" alt="ezyyk.com logo" style={{ width: "36px", height: "36px" }} />
-          <span>ezyyk.com</span>
-        </Link>
+    <>
+      <header className="header" style={{ padding: "1.5rem 0" }}>
+        <div className="header-left">
+          <Link href="/" className="logo">
+            <img src="/logo.png" alt="ezyyk.com logo" style={{ width: "36px", height: "36px" }} />
+            <span>ezyyk.com</span>
+          </Link>
+          
+          <nav className="header-nav header-nav-desktop">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`header-nav-link ${isActive ? "active" : ""}`}
+                >
+                  <Icon size={16} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
         
-        <nav className="header-nav">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`header-nav-link ${isActive ? "active" : ""}`}
-              >
-                <Icon size={16} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-      
-      <div className="user-nav">
-        {status === "loading" ? (
-          <div>Načítání...</div>
-        ) : session ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Link href="/codes">
-              <Button 
-                variant="secondary" 
-                className="header-activate-btn"
-                style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", gap: "0.5rem" }}
-              >
-                <Ticket size={16} /> Aktivovat kód
-              </Button>
-            </Link>
+        <div className="user-nav">
+          {/* Points display - visible on desktop, hidden on mobile (shown in mobile menu) */}
+          <div className="user-nav-desktop">
+            {status === "loading" ? (
+              <div>Načítání...</div>
+            ) : session ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <Link href="/codes">
+                  <Button 
+                    variant="secondary" 
+                    className="header-activate-btn"
+                    style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", gap: "0.5rem" }}
+                  >
+                    <Ticket size={16} /> Aktivovat kód
+                  </Button>
+                </Link>
 
-            <Link 
-              href="/#how-to-get-points" 
-              className="points-display-link"
-              onClick={(e) => {
-                if (window.location.pathname === '/') {
-                  e.preventDefault();
-                  const el = document.getElementById('how-to-get-points');
-                  if (el) {
-                    const rect = el.getBoundingClientRect();
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const targetTop = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
-                    
-                    // Custom gradual smooth scroll animation
-                    const startY = window.pageYOffset;
-                    const distance = targetTop - startY;
-                    const duration = 1200; // 1.2 seconds for a nice gradual feel
-                    let startTime: number | null = null;
+                <Link 
+                  href="/#how-to-get-points" 
+                  className="points-display-link"
+                  onClick={(e) => {
+                    if (window.location.pathname === '/') {
+                      e.preventDefault();
+                      const el = document.getElementById('how-to-get-points');
+                      if (el) {
+                        const rect = el.getBoundingClientRect();
+                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                        const targetTop = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+                        
+                        // Custom gradual smooth scroll animation
+                        const startY = window.pageYOffset;
+                        const distance = targetTop - startY;
+                        const duration = 1200; // 1.2 seconds for a nice gradual feel
+                        let startTime: number | null = null;
 
-                    const animation = (currentTime: number) => {
-                      if (startTime === null) startTime = currentTime;
-                      const timeElapsed = currentTime - startTime;
-                      const progress = Math.min(timeElapsed / duration, 1);
-                      
-                      // EaseInOutQuad function
-                      const ease = progress < 0.5 
-                        ? 2 * progress * progress 
-                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                        const animation = (currentTime: number) => {
+                          if (startTime === null) startTime = currentTime;
+                          const timeElapsed = currentTime - startTime;
+                          const progress = Math.min(timeElapsed / duration, 1);
+                          
+                          // EaseInOutQuad function
+                          const ease = progress < 0.5 
+                            ? 2 * progress * progress 
+                            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
-                      window.scrollTo(0, startY + (distance * ease));
-                      
-                      if (timeElapsed < duration) {
+                          window.scrollTo(0, startY + (distance * ease));
+                          
+                          if (timeElapsed < duration) {
+                            requestAnimationFrame(animation);
+                          }
+                        };
+
                         requestAnimationFrame(animation);
                       }
-                    };
+                    }
+                  }}
+                >
+                  <div className={`points-display ${isFlashing ? "flash-red" : ""}`} style={{ position: "relative" }}>
 
-                    requestAnimationFrame(animation);
-                  }
-                }
-              }}
-            >
-              <div className={`points-display ${isFlashing ? "flash-red" : ""}`} style={{ position: "relative" }}>
+                    <GemIcon size={20} />
 
-                <GemIcon size={20} />
+                    <RollingNumber value={points} /> bodů
 
-                <RollingNumber value={points} /> bodů
+                    
+                    {/* Points Change Animation */}
+                    <PointsChange points={points} />
+                  </div>
 
+                </Link>
                 
-                {/* Points Change Animation */}
-                <PointsChange points={points} />
+                <Link 
+                  href="/profile" 
+                  className="header-user-profile"
+                  style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none", background: "var(--glass-bg)", padding: "0.4rem 1rem 0.4rem 0.4rem", borderRadius: "50px", border: "1px solid var(--glass-border)" }}
+                >
+                  {session.user?.image ? (
+                    <img src={session.user.image} alt="Avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
+                  ) : (
+                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--accent-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "bold" }}>
+                      {session.user?.name?.charAt(0) || "U"}
+                    </div>
+                  )}
+                  <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{session.user?.name}</span>
+                </Link>
+
+                <Button 
+                  variant="secondary" 
+                  className="header-logout-btn" 
+                  onClick={() => { if(confirm("Ještě se fakt chceš odhlásit?")) signOut() }} 
+                  style={{ padding: "0.5rem" }} 
+                  title="Odhlásit"
+                >
+                  <LogOut size={18} />
+                </Button>
               </div>
-
-            </Link>
-            
-            <Link 
-              href="/profile" 
-              className="header-user-profile"
-              style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none", background: "var(--glass-bg)", padding: "0.4rem 1rem 0.4rem 0.4rem", borderRadius: "50px", border: "1px solid var(--glass-border)" }}
-            >
-              {session.user?.image ? (
-                <img src={session.user.image} alt="Avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
-              ) : (
-                <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--accent-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "bold" }}>
-                  {session.user?.name?.charAt(0) || "U"}
-                </div>
-              )}
-              <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{session.user?.name}</span>
-            </Link>
-
-            <Button 
-              variant="secondary" 
-              className="header-logout-btn" 
-              onClick={() => { if(confirm("Ještě se fakt chceš odhlásit?")) signOut() }} 
-              style={{ padding: "0.5rem" }} 
-              title="Odhlásit"
-            >
-              <LogOut size={18} />
-            </Button>
+            ) : (
+              <Button onClick={() => signIn("kick")} style={{ fontSize: "0.9rem", padding: "0.5rem 1.2rem" }}>
+                <LogIn size={16} /> Přihlásit přes Kick
+              </Button>
+            )}
           </div>
-        ) : (
-          <Button onClick={() => signIn("kick")} style={{ fontSize: "0.9rem", padding: "0.5rem 1.2rem" }}>
-            <LogIn size={16} /> Přihlásit přes Kick
-          </Button>
-        )}
-      </div>
-    </header>
+
+          {/* Mobile hamburger button */}
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+          <nav className="mobile-menu-panel" onClick={(e) => e.stopPropagation()}>
+            {/* User info at top of mobile menu */}
+            {session && (
+              <div className="mobile-menu-user">
+                <Link href="/profile" className="mobile-menu-user-info" onClick={() => setMobileMenuOpen(false)}>
+                  {session.user?.image ? (
+                    <img src={session.user.image} alt="Avatar" style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} />
+                  ) : (
+                    <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--accent-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "bold", fontSize: "1.1rem" }}>
+                      {session.user?.name?.charAt(0) || "U"}
+                    </div>
+                  )}
+                  <div>
+                    <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "1.05rem" }}>{session.user?.name}</div>
+                    <div className={`points-display mobile-points ${isFlashing ? "flash-red" : ""}`} style={{ position: "relative", padding: "0.3rem 0.8rem", fontSize: "0.85rem", marginTop: "0.3rem" }}>
+                      <GemIcon size={16} />
+                      <RollingNumber value={points} /> bodů
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            )}
+
+            {/* Nav items */}
+            <div className="mobile-menu-nav">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`mobile-nav-link ${isActive ? "active" : ""}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Icon size={20} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Actions */}
+            <div className="mobile-menu-actions">
+              {session ? (
+                <>
+                  <Link href="/codes" onClick={() => setMobileMenuOpen(false)} style={{ width: "100%" }}>
+                    <Button 
+                      variant="secondary" 
+                      style={{ width: "100%", padding: "0.8rem", fontSize: "0.9rem", gap: "0.5rem" }}
+                    >
+                      <Ticket size={18} /> Aktivovat kód
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="secondary" 
+                    className="header-logout-btn" 
+                    onClick={() => { if(confirm("Ještě se fakt chceš odhlásit?")) signOut() }} 
+                    style={{ width: "100%", padding: "0.8rem", fontSize: "0.9rem", gap: "0.5rem" }}
+                  >
+                    <LogOut size={18} /> Odhlásit se
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => signIn("kick")} style={{ width: "100%", padding: "0.8rem", fontSize: "0.9rem" }}>
+                  <LogIn size={16} /> Přihlásit přes Kick
+                </Button>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
+    </>
   );
 }

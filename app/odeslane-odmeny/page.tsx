@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Package, Gift, ShoppingBag, ExternalLink, Calendar, User, Trophy, Gem } from "lucide-react";
 import Link from "next/link";
 
@@ -34,6 +33,10 @@ export default function SentRewardsPage() {
       });
   }, []);
 
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr.replace(" ", "T") + (dateStr.includes("T") ? "" : "Z")).toLocaleDateString("cs-CZ");
+  };
+
   return (
     <div className="container">
       <Header />
@@ -61,122 +64,219 @@ export default function SentRewardsPage() {
               <p>Zatím zde nejsou žádné záznamy o odeslaných odměnách.</p>
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                <thead>
-                  <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid var(--glass-border)" }}>
-                    <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Odměna</th>
-                    <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Typ</th>
-                    <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Příjemce</th>
-                    <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Datum doručení</th>
-                    <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Stav</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rewards.map((reward, i) => (
-                    <tr key={`${reward.type}-${reward.id}`} style={{ 
-                      borderBottom: i === rewards.length - 1 ? "none" : "1px solid rgba(255,255,255,0.03)",
-                      transition: "background 0.3s ease",
-                      cursor: "default"
-                    }} className="reward-row">
-                      <td style={{ padding: "1.5rem 2rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-                          <div style={{ 
-                            width: "50px", 
-                            height: "50px", 
-                            borderRadius: "12px", 
-                            background: "rgba(0,0,0,0.4)", 
-                            display: "flex", 
-                            alignItems: "center", 
-                            justifyContent: "center",
-                            border: "1px solid var(--glass-border)",
-                            overflow: "hidden"
-                          }}>
-                            {reward.image_url ? (
-                              <img src={reward.image_url} alt={reward.title} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                            ) : (
-                              reward.type === 'shop' ? <ShoppingBag size={20} style={{ opacity: 0.5 }} /> : <Gift size={20} style={{ opacity: 0.5 }} />
-                            )}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "1.05rem" }}>{reward.title}</div>
-                            <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>ID: {reward.id}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: "1.5rem 2rem" }}>
-                        <div style={{ 
-                          display: "inline-flex", 
-                          alignItems: "center", 
-                          gap: "0.5rem", 
-                          padding: "0.4rem 0.8rem", 
-                          borderRadius: "50px", 
-                          fontSize: "0.85rem",
-                          background: reward.type === 'shop' ? "rgba(138, 43, 226, 0.15)" : "rgba(255, 215, 0, 0.1)",
-                          color: reward.type === 'shop' ? "#8A2BE2" : "#FFD700",
-                          border: "1px solid",
-                          borderColor: reward.type === 'shop' ? "rgba(138, 43, 226, 0.3)" : "rgba(255, 215, 0, 0.2)"
-                        }}>
-                          {reward.type === 'shop' ? <ShoppingBag size={14} /> : <Trophy size={14} />}
-                          {reward.type === 'shop' ? 'Nákup v shopu' : 'Giveaway výhra'}
-                        </div>
-                      </td>
-                      <td style={{ padding: "1.5rem 2rem" }}>
-                        <Link 
-                          href={`/profile/${reward.user_name}`} 
-                          className="recipient-link"
-                          style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--text-primary)", fontWeight: "500", textDecoration: "none", transition: "color 0.2s" }}
-                        >
-                          <div style={{ 
-                            width: "28px", 
-                            height: "28px", 
-                            borderRadius: "50%", 
-                            background: "var(--accent-primary)", 
-                            display: "flex", 
-                            alignItems: "center", 
-                            justifyContent: "center", 
-                            fontSize: "0.8rem", 
-                            color: "white",
-                            overflow: "hidden",
-                            border: "1px solid var(--glass-border)"
-                          }}>
-                            {reward.avatar_url ? (
-                              <img src={reward.avatar_url} alt={reward.user_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            ) : (
-                              reward.user_name.charAt(0).toUpperCase()
-                            )}
-                          </div>
-                          {reward.user_name}
-                        </Link>
-                      </td>
-                      <td style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontSize: "0.95rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Calendar size={14} />
-                          {new Date(reward.date.replace(" ", "T") + (reward.date.includes("T") ? "" : "Z")).toLocaleDateString("cs-CZ")}
-                        </div>
-                      </td>
-                      <td style={{ padding: "1.5rem 2rem", textAlign: "right" }}>
-                        <div style={{ 
-                          display: "inline-flex", 
-                          alignItems: "center", 
-                          gap: "0.4rem", 
-                          color: "#4CAF50", 
-                          fontWeight: "700",
-                          fontSize: "0.9rem",
-                          background: "rgba(76, 175, 80, 0.1)",
-                          padding: "0.4rem 1rem",
-                          borderRadius: "50px",
-                          border: "1px solid rgba(76, 175, 80, 0.2)"
-                        }}>
-                          <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#4CAF50" }}></div>
-                          ODESLÁNO
-                        </div>
-                      </td>
+            <>
+              {/* Desktop table view */}
+              <div className="sent-rewards-table" style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid var(--glass-border)" }}>
+                      <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Odměna</th>
+                      <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Typ</th>
+                      <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Příjemce</th>
+                      <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Datum doručení</th>
+                      <th style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontWeight: "600", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Stav</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {rewards.map((reward, i) => (
+                      <tr key={`${reward.type}-${reward.id}`} style={{ 
+                        borderBottom: i === rewards.length - 1 ? "none" : "1px solid rgba(255,255,255,0.03)",
+                        transition: "background 0.3s ease",
+                        cursor: "default"
+                      }} className="reward-row">
+                        <td style={{ padding: "1.5rem 2rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+                            <div style={{ 
+                              width: "50px", 
+                              height: "50px", 
+                              borderRadius: "12px", 
+                              background: "rgba(0,0,0,0.4)", 
+                              display: "flex", 
+                              alignItems: "center", 
+                              justifyContent: "center",
+                              border: "1px solid var(--glass-border)",
+                              overflow: "hidden"
+                            }}>
+                              {reward.image_url ? (
+                                <img src={reward.image_url} alt={reward.title} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                              ) : (
+                                reward.type === 'shop' ? <ShoppingBag size={20} style={{ opacity: 0.5 }} /> : <Gift size={20} style={{ opacity: 0.5 }} />
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "1.05rem" }}>{reward.title}</div>
+                              <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>ID: {reward.id}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: "1.5rem 2rem" }}>
+                          <div style={{ 
+                            display: "inline-flex", 
+                            alignItems: "center", 
+                            gap: "0.5rem", 
+                            padding: "0.4rem 0.8rem", 
+                            borderRadius: "50px", 
+                            fontSize: "0.85rem",
+                            background: reward.type === 'shop' ? "rgba(138, 43, 226, 0.15)" : "rgba(255, 215, 0, 0.1)",
+                            color: reward.type === 'shop' ? "#8A2BE2" : "#FFD700",
+                            border: "1px solid",
+                            borderColor: reward.type === 'shop' ? "rgba(138, 43, 226, 0.3)" : "rgba(255, 215, 0, 0.2)"
+                          }}>
+                            {reward.type === 'shop' ? <ShoppingBag size={14} /> : <Trophy size={14} />}
+                            {reward.type === 'shop' ? 'Nákup v shopu' : 'Giveaway výhra'}
+                          </div>
+                        </td>
+                        <td style={{ padding: "1.5rem 2rem" }}>
+                          <Link 
+                            href={`/profile/${reward.user_name}`} 
+                            className="recipient-link"
+                            style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--text-primary)", fontWeight: "500", textDecoration: "none", transition: "color 0.2s" }}
+                          >
+                            <div style={{ 
+                              width: "28px", 
+                              height: "28px", 
+                              borderRadius: "50%", 
+                              background: "var(--accent-primary)", 
+                              display: "flex", 
+                              alignItems: "center", 
+                              justifyContent: "center", 
+                              fontSize: "0.8rem", 
+                              color: "white",
+                              overflow: "hidden",
+                              border: "1px solid var(--glass-border)"
+                            }}>
+                              {reward.avatar_url ? (
+                                <img src={reward.avatar_url} alt={reward.user_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              ) : (
+                                reward.user_name.charAt(0).toUpperCase()
+                              )}
+                            </div>
+                            {reward.user_name}
+                          </Link>
+                        </td>
+                        <td style={{ padding: "1.5rem 2rem", color: "var(--text-secondary)", fontSize: "0.95rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Calendar size={14} />
+                            {formatDate(reward.date)}
+                          </div>
+                        </td>
+                        <td style={{ padding: "1.5rem 2rem", textAlign: "right" }}>
+                          <div style={{ 
+                            display: "inline-flex", 
+                            alignItems: "center", 
+                            gap: "0.4rem", 
+                            color: "#4CAF50", 
+                            fontWeight: "700",
+                            fontSize: "0.9rem",
+                            background: "rgba(76, 175, 80, 0.1)",
+                            padding: "0.4rem 1rem",
+                            borderRadius: "50px",
+                            border: "1px solid rgba(76, 175, 80, 0.2)"
+                          }}>
+                            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#4CAF50" }}></div>
+                            ODESLÁNO
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile card view */}
+              <div className="sent-rewards-cards">
+                {rewards.map((reward) => (
+                  <div key={`mobile-${reward.type}-${reward.id}`} className="reward-card-mobile">
+                    <div className="reward-card-mobile-header">
+                      <div className="reward-card-mobile-thumb">
+                        {reward.image_url ? (
+                          <img src={reward.image_url} alt={reward.title} />
+                        ) : (
+                          reward.type === 'shop' ? <ShoppingBag size={18} style={{ opacity: 0.5 }} /> : <Gift size={18} style={{ opacity: 0.5 }} />
+                        )}
+                      </div>
+                      <div className="reward-card-mobile-info">
+                        <div className="reward-card-mobile-title">{reward.title}</div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.15rem" }}>
+                          ID: {reward.id}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="reward-card-mobile-meta">
+                      {/* Type badge */}
+                      <div style={{ 
+                        display: "inline-flex", 
+                        alignItems: "center", 
+                        gap: "0.35rem", 
+                        padding: "0.25rem 0.6rem", 
+                        borderRadius: "50px", 
+                        fontSize: "0.75rem",
+                        background: reward.type === 'shop' ? "rgba(138, 43, 226, 0.15)" : "rgba(255, 215, 0, 0.1)",
+                        color: reward.type === 'shop' ? "#8A2BE2" : "#FFD700",
+                        border: "1px solid",
+                        borderColor: reward.type === 'shop' ? "rgba(138, 43, 226, 0.3)" : "rgba(255, 215, 0, 0.2)"
+                      }}>
+                        {reward.type === 'shop' ? <ShoppingBag size={12} /> : <Trophy size={12} />}
+                        {reward.type === 'shop' ? 'Shop' : 'Giveaway'}
+                      </div>
+
+                      {/* Recipient */}
+                      <Link 
+                        href={`/profile/${reward.user_name}`}
+                        style={{ 
+                          display: "inline-flex", 
+                          alignItems: "center", 
+                          gap: "0.35rem", 
+                          fontSize: "0.8rem", 
+                          color: "var(--text-primary)", 
+                          textDecoration: "none",
+                          fontWeight: "500"
+                        }}
+                      >
+                        <div style={{ 
+                          width: "20px", height: "20px", borderRadius: "50%", 
+                          background: "var(--accent-primary)", 
+                          display: "flex", alignItems: "center", justifyContent: "center", 
+                          fontSize: "0.6rem", color: "white", overflow: "hidden",
+                          border: "1px solid var(--glass-border)"
+                        }}>
+                          {reward.avatar_url ? (
+                            <img src={reward.avatar_url} alt={reward.user_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            reward.user_name.charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        {reward.user_name}
+                      </Link>
+
+                      {/* Date */}
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                        <Calendar size={12} />
+                        {formatDate(reward.date)}
+                      </div>
+
+                      {/* Status */}
+                      <div style={{ 
+                        display: "inline-flex", 
+                        alignItems: "center", 
+                        gap: "0.3rem", 
+                        color: "#4CAF50", 
+                        fontWeight: "700",
+                        fontSize: "0.7rem",
+                        background: "rgba(76, 175, 80, 0.1)",
+                        padding: "0.2rem 0.6rem",
+                        borderRadius: "50px",
+                        border: "1px solid rgba(76, 175, 80, 0.2)"
+                      }}>
+                        <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#4CAF50" }}></div>
+                        ODESLÁNO
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </section>
 
@@ -206,8 +306,6 @@ export default function SentRewardsPage() {
           }
         `}</style>
       </main>
-
-      <Footer />
     </div>
   );
 }

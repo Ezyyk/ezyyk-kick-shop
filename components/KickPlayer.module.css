@@ -64,10 +64,34 @@
   pointer-events: auto;
 }
 
+@media (max-width: 1024px) {
+  .floatingPlayer {
+    width: 320px;
+  }
+}
+
 @media (max-width: 768px) {
   .floatingPlayer {
-    width: 250px;
+    width: 260px;
     bottom: 16px;
     right: 16px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .floatingPlayer {
+    width: 200px;
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .dragHandle {
+    height: 20px;
+  }
+
+  .dragIcon {
+    width: 30px;
+    height: 3px;
   }
 }
