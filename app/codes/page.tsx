@@ -7,13 +7,52 @@ import { Ticket, Info, Tv, Crown, Gift, Zap, MessageSquare } from "lucide-react"
 
 export default function CodesPage() {
   const { data: session, status } = useSession();
-  const [redeemCode, setRedeemCode] = useState("");
+  const [codeDigits, setCodeDigits] = useState(['', '', '', '', '']);
   const [redeemStatus, setRedeemStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputsRef = React.useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleDigitChange = (index: number, value: string) => {
+    const uppercaseValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const newDigits = [...codeDigits];
+    
+    // Allow replacing current character or just setting it
+    newDigits[index] = uppercaseValue.slice(-1); 
+    setCodeDigits(newDigits);
+
+    // Auto focus next input
+    if (uppercaseValue && index < 4) {
+      inputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    if (!pastedData) return;
+    
+    const newDigits = [...codeDigits];
+    for (let i = 0; i < pastedData.length; i++) {
+      newDigits[i] = pastedData[i];
+    }
+    setCodeDigits(newDigits);
+    
+    // Focus next empty or last input
+    const nextIndex = Math.min(pastedData.length, 4);
+    inputsRef.current[nextIndex === 5 ? 4 : nextIndex]?.focus();
+  };
+
+  const fullCode = codeDigits.join('');
 
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!redeemCode.trim() || isSubmitting) return;
+    if (fullCode.length < 5 || isSubmitting) return;
 
     setIsSubmitting(true);
     setRedeemStatus(null);
@@ -22,14 +61,15 @@ export default function CodesPage() {
       const res = await fetch("/api/redeem-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: redeemCode }),
+        body: JSON.stringify({ code: fullCode }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         setRedeemStatus({ type: 'success', msg: data.message });
-        setRedeemCode("");
+        setCodeDigits(['', '', '', '', '']);
+        inputsRef.current[0]?.focus();
       } else {
         setRedeemStatus({ type: 'error', msg: data.error || "Něco se nepovedlo" });
       }
@@ -62,21 +102,26 @@ export default function CodesPage() {
                   </div>
                 )}
 
-                <input 
-                  type="text" 
-                  className="redeem-input" 
-                  placeholder="ABCDE" 
-                  maxLength={5}
-                  value={redeemCode}
-                  onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-                  autoFocus
-                  style={{ marginBottom: "1.5rem" }}
-                />
+                <div className="otp-container" onPaste={handlePaste}>
+                  {codeDigits.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { inputsRef.current[index] = el; }}
+                      type="text"
+                      className="otp-input"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleDigitChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      autoFocus={index === 0}
+                    />
+                  ))}
+                </div>
 
                 <Button 
                   type="submit" 
                   style={{ width: "100%", padding: "1.2rem", fontSize: "1.1rem" }}
-                  disabled={isSubmitting || redeemCode.length < 5}
+                  disabled={isSubmitting || fullCode.length < 5}
                 >
                   {isSubmitting ? "Ověřování..." : "Aktivovat"}
                 </Button>

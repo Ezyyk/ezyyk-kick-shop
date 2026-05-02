@@ -223,7 +223,7 @@ export async function redeemCode(code: string, userId: string) {
   if (!existingCode) return { success: false, message: 'Kód je neplatný nebo již byl použit.' };
   
   await db.run(
-    'UPDATE redeem_codes SET is_used = 1, used_by_user_id = ?, used_at = datetime("now") WHERE code = ?',
+    'UPDATE redeem_codes SET is_used = 1, used_by_user_id = ?, used_at = datetime(\'now\') WHERE code = ?',
     userId, code
   );
   
@@ -260,7 +260,7 @@ export async function findOrCreateUserByName(name: string) {
 
 export async function addPoints(id: string, points: number) {
   const db = await getDb();
-  await db.run('UPDATE users SET points = points + ?, last_ping = datetime("now") WHERE id = ?', points, id);
+  await db.run('UPDATE users SET points = points + ?, last_ping = datetime(\'now\') WHERE id = ?', points, id);
   return await getUser(id);
 }
 
@@ -268,7 +268,7 @@ export async function addPointsByName(name: string, points: number) {
   const db = await getDb();
   const user = await findOrCreateUserByName(name);
   if (user) {
-    await db.run('UPDATE users SET points = points + ?, last_ping = datetime("now") WHERE name = ?', points, name);
+    await db.run('UPDATE users SET points = points + ?, last_ping = datetime(\'now\') WHERE name = ?', points, name);
   }
   return await getUserByName(name);
 }

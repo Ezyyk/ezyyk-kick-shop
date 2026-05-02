@@ -1737,33 +1737,32 @@ a:hover {
   transform: rotate(90deg);
 }
 
-.redeem-input {
-  width: 100%;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 700;
-  text-align: center;
-  letter-spacing: 0.2em;
+.otp-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
   margin-bottom: 1.5rem;
-  transition: var(--transition);
 }
 
-.redeem-input:focus {
+.otp-input {
+  width: 3.5rem;
+  height: 4.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: white;
+  transition: var(--transition);
+  text-transform: uppercase;
+}
+
+.otp-input:focus {
   outline: none;
   border-color: var(--accent-primary);
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 0 15px var(--accent-glow);
-}
-
-.redeem-input::placeholder {
-  letter-spacing: normal;
-  font-size: 0.9rem;
-  font-weight: 400;
-  color: var(--text-secondary);
 }
 
 .redeem-status {
