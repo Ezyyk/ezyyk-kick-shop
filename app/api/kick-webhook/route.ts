@@ -24,44 +24,21 @@ async function handlePointsCommand(username: string, chatId?: string | number) {
   const user = await getUserByName(username);
   const points = user?.points || 0;
   await sendChatMessage(
-    `💰 @${username} máš ${formatPoints(points)} bodů! Sbírej body sledováním streamu a aktivitou v chatu → ezyyk.com`,
+    `@${username} má ${formatPoints(points)} bodů`,
     undefined, chatId
   );
 }
 
-async function handleShopCommand(chatId?: string | number) {
+async function handleShopCommand(username: string, chatId?: string | number) {
   await sendChatMessage(
-    `🛒 Obchod s odměnami najdeš na: ezyyk.com/shop | Sbírej body a vyměň je za skvělé odměny! 🎁`,
+    `@${username} ezyyk.com`,
     undefined, chatId
   );
 }
 
-async function handleLeaderboardCommand(chatId?: string | number) {
-  try {
-    const topUsers = await getTopUsers(5);
-    if (topUsers.length === 0) {
-      await sendChatMessage('📊 Žebříček je zatím prázdný!', undefined, chatId);
-      return;
-    }
-
-    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-    const lines = topUsers.map((u: any, i: number) => 
-      `${medals[i]} ${u.name}: ${formatPoints(u.points)} bodů`
-    ).join(' | ');
-
-    await sendChatMessage(
-      `📊 TOP 5: ${lines} → Kompletní žebříček: ezyyk.com/leaderboard`,
-      undefined, chatId
-    );
-  } catch (error) {
-    console.error('[BOT] Error in leaderboard command:', error);
-    await sendChatMessage('📊 Žebříček najdeš na: ezyyk.com/leaderboard', undefined, chatId);
-  }
-}
-
-async function handleHelpCommand(chatId?: string | number) {
+async function handleLeaderboardCommand(username: string, chatId?: string | number) {
   await sendChatMessage(
-    `⚡ EzyykBot příkazy: !points (tvoje body) | !shop (obchod) | !leaderboard (top 5) | !help (tento seznam) → ezyyk.com`,
+    `@${username} zde najdete žebříček ezyyk.com/leaderboard`,
     undefined, chatId
   );
 }
@@ -103,15 +80,11 @@ async function handleChatMessage(payload: Record<string, unknown>) {
     return;
   }
   if (trimmedContent === '!shop' || trimmedContent === '!obchod') {
-    await handleShopCommand(chatroomId);
+    await handleShopCommand(username, chatroomId);
     return;
   }
   if (trimmedContent === '!leaderboard' || trimmedContent === '!top' || trimmedContent === '!zebricek') {
-    await handleLeaderboardCommand(chatroomId);
-    return;
-  }
-  if (trimmedContent === '!help' || trimmedContent === '!pomoc' || trimmedContent === '!commands') {
-    await handleHelpCommand(chatroomId);
+    await handleLeaderboardCommand(username, chatroomId);
     return;
   }
 

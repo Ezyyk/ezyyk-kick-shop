@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         
         const chatroomId = await getSetting('last_chatroom_id');
         await sendChatMessage(
-          `🎁 CODE DROP! První kdo zadá kód [ ${code} ] na ezyyk.com/codes získá ${CODE_DROP_POINTS} bodů! ⚡`,
+          `CODE DROP: [ ${code} ] -> ezyyk.com/codes`,
           undefined,
           chatroomId || undefined
         );
