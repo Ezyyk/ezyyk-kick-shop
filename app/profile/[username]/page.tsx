@@ -71,7 +71,7 @@ export default function PublicProfilePage() {
     );
   }
 
-  const { user, purchases, giveawayHistory } = data;
+  const { user, purchases, giveawayHistory, redeemedCodesCount } = data;
 
   return (
     <div className="container">
@@ -109,8 +109,9 @@ export default function PublicProfilePage() {
             )}
             <span style={{ background: "rgba(138, 43, 226, 0.15)", color: "var(--accent-primary)", padding: "0.3rem 0.8rem", borderRadius: "50px", fontSize: "0.85rem", fontWeight: "600", border: "1px solid var(--glass-border)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
               <GemIcon size={14} /> {formatPoints(user.points)} bodů
-
-
+            </span>
+            <span style={{ background: "rgba(255, 152, 0, 0.15)", color: "#FF9800", padding: "0.3rem 0.8rem", borderRadius: "50px", fontSize: "0.85rem", fontWeight: "600", border: "1px solid rgba(255, 152, 0, 0.3)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              ⚡ {redeemedCodesCount || 0} kódů
             </span>
           </div>
 

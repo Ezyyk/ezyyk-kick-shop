@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByName, getUserPurchases, getUserGiveawayHistory } from "@/lib/db";
+import { getUserByName, getUserPurchases, getUserGiveawayHistory, getUserRedeemedCodesCount } from "@/lib/db";
 
 export async function GET(
   req: Request,
@@ -16,6 +16,7 @@ export async function GET(
     // Fetch user activity
     const purchases = await getUserPurchases(user.id);
     const giveawayHistory = await getUserGiveawayHistory(user.name);
+    const redeemedCodesCount = await getUserRedeemedCodesCount(user.name);
     
     // Remove sensitive data (like trade_url if we want to keep it private, 
     // but the user's screenshot showed it, so maybe it's fine for public profiles in this community?)
@@ -33,7 +34,8 @@ export async function GET(
         trade_url: user.trade_url
       },
       purchases,
-      giveawayHistory
+      giveawayHistory,
+      redeemedCodesCount
     });
   } catch (error) {
     console.error("[USER-PROFILE-API] Error:", error);

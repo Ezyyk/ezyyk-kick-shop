@@ -17,16 +17,19 @@ export async function GET() {
   const user = await getUserByName(userName);
   let purchases = [];
   let giveawayHistory = [];
+  let redeemedCodesCount = 0;
   if (user) {
-    const { getUserPurchases, getUserGiveawayHistory } = await import("@/lib/db");
+    const { getUserPurchases, getUserGiveawayHistory, getUserRedeemedCodesCount } = await import("@/lib/db");
     purchases = await getUserPurchases(user.id);
     giveawayHistory = await getUserGiveawayHistory(userName);
+    redeemedCodesCount = await getUserRedeemedCodesCount(userName);
   }
 
   return NextResponse.json({ 
     tradeUrl: user?.trade_url || "", 
     purchases,
-    giveawayHistory 
+    giveawayHistory,
+    redeemedCodesCount
   });
 }
 

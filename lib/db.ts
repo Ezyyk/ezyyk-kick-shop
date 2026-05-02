@@ -232,6 +232,29 @@ export async function redeemCode(code: string, userId: string) {
   return { success: true, points: existingCode.points };
 }
 
+export async function getRedeemedCodesHistory() {
+  const db = await getDb();
+  return await db.all(`
+    SELECT r.code, r.points, r.used_at, u.name as user_name
+    FROM redeem_codes r
+    JOIN users u ON r.used_by_user_id = u.id
+    WHERE r.is_used = 1 AND r.used_by_user_id IS NOT NULL
+    ORDER BY r.used_at DESC
+    LIMIT 50
+  `);
+}
+
+export async function getUserRedeemedCodesCount(username: string) {
+  const db = await getDb();
+  const res = await db.get(`
+    SELECT COUNT(*) as count
+    FROM redeem_codes r
+    JOIN users u ON r.used_by_user_id = u.id
+    WHERE u.name = ? AND r.is_used = 1
+  `, username);
+  return res ? res.count : 0;
+}
+
 export async function getUser(id: string) {
   const db = await getDb();
   return await db.get('SELECT * FROM users WHERE id = ?', id);

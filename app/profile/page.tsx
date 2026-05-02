@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [purchases, setPurchases] = useState<any[]>([]);
   const [giveawayHistory, setGiveawayHistory] = useState<any[]>([]);
+  const [redeemedCodesCount, setRedeemedCodesCount] = useState(0);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -33,6 +34,9 @@ export default function ProfilePage() {
           }
           if (data.giveawayHistory) {
             setGiveawayHistory(data.giveawayHistory);
+          }
+          if (data.redeemedCodesCount !== undefined) {
+            setRedeemedCodesCount(data.redeemedCodesCount);
           }
         })
         .catch((e) => console.error("Chyba při načítání profilu", e));
@@ -86,7 +90,9 @@ export default function ProfilePage() {
             )}
             <div>
               <h1 style={{ margin: 0, fontSize: "2rem", color: "var(--text-primary)" }}>{session?.user?.name}</h1>
-              <p style={{ margin: 0, color: "var(--text-secondary)" }}>Kick Profil</p>
+              <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+                Kick Profil • <span style={{ color: "var(--accent-primary)", fontWeight: "bold" }}>{redeemedCodesCount}</span> chycených kódů
+              </p>
             </div>
           </div>
 

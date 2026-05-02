@@ -64,6 +64,7 @@ type Tab = "purchases" | "users" | "items" | "giveaways" | "bot" | "ticket_histo
 function BotTab() {
   const [botStatus, setBotStatus] = useState<any>(null);
   const [botEvents, setBotEvents] = useState<any[]>([]);
+  const [codeHistory, setCodeHistory] = useState<any[]>([]);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -74,14 +75,19 @@ function BotTab() {
   const loadBotData = async () => {
     setLoadingStatus(true);
     try {
-      const [statusRes, eventsRes] = await Promise.all([
+      const [statusRes, eventsRes, historyRes] = await Promise.all([
         fetch("/api/admin/bot/status"),
         fetch("/api/admin/bot-events?limit=30"),
+        fetch("/api/admin/bot/code-history"),
       ]);
       if (statusRes.ok) setBotStatus(await statusRes.json());
       if (eventsRes.ok) {
         const data = await eventsRes.json();
         setBotEvents(data.events || []);
+      }
+      if (historyRes.ok) {
+        const data = await historyRes.json();
+        setCodeHistory(data.history || []);
       }
     } catch (e) {
       console.error("Error loading bot data:", e);
@@ -309,6 +315,39 @@ function BotTab() {
                     <td style={{ color: "#888", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {ev.details || "—"}
                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* CODE REDEMPTION HISTORY */}
+      <div className="glass-panel" style={{ padding: "1.5rem", marginTop: "1.5rem" }}>
+        <h3 style={{ marginBottom: "1rem" }}>🎟️ Historie Code Dropů</h3>
+        {codeHistory.length === 0 ? (
+          <p style={{ color: "#888" }}>Zatím nebyl aktivován žádný kód.</p>
+        ) : (
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <table className="admin-table" style={{ fontSize: "0.85rem" }}>
+              <thead>
+                <tr>
+                  <th>Čas aktivace</th>
+                  <th>Kód</th>
+                  <th>Uživatel</th>
+                  <th>Odměna</th>
+                </tr>
+              </thead>
+              <tbody>
+                {codeHistory.map((ch: any, i: number) => (
+                  <tr key={i}>
+                    <td style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>
+                      {ch.used_at ? new Date(ch.used_at.replace(" ", "T") + (ch.used_at.includes("T") ? "" : "Z")).toLocaleString("cs-CZ") : "—"}
+                    </td>
+                    <td style={{ fontWeight: 600, letterSpacing: "1px" }}>{ch.code}</td>
+                    <td style={{ color: "var(--accent-primary)", fontWeight: 600 }}>{ch.user_name}</td>
+                    <td><span style={{ color: "#FFD700", fontWeight: 600 }}>+{ch.points} bodů</span></td>
                   </tr>
                 ))}
               </tbody>
