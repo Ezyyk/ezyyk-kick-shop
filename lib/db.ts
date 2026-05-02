@@ -69,6 +69,7 @@ export async function getDb() {
       item_id TEXT NOT NULL,
       item_title TEXT NOT NULL,
       cost INTEGER NOT NULL,
+      user_message TEXT,
       purchased_at DATETIME DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
@@ -84,6 +85,7 @@ export async function getDb() {
       category TEXT DEFAULT 'other',
       stock INTEGER DEFAULT -1,
       image_scale REAL DEFAULT 1.0,
+      requires_message BOOLEAN DEFAULT 0,
       created_at DATETIME DEFAULT (datetime('now'))
     );
   `);
@@ -177,6 +179,14 @@ export async function getDb() {
 
   try {
     await wrapper.exec('ALTER TABLE users ADD COLUMN avatar_url TEXT');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE shop_items ADD COLUMN requires_message BOOLEAN DEFAULT 0');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE purchase_history ADD COLUMN user_message TEXT');
   } catch (e) {}
 
   return wrapper;
@@ -338,11 +348,11 @@ export async function getAllUsers() {
   return await db.all('SELECT id, name, points, is_sub, last_ping, trade_url FROM users ORDER BY points DESC');
 }
 
-export async function logPurchase(userId: string, userName: string, itemId: string, itemTitle: string, cost: number) {
+export async function logPurchase(userId: string, userName: string, itemId: string, itemTitle: string, cost: number, userMessage: string = '') {
   const db = await getDb();
   await db.run(
-    'INSERT INTO purchase_history (user_id, user_name, item_id, item_title, cost) VALUES (?, ?, ?, ?, ?)',
-    userId, userName, itemId, itemTitle, cost
+    'INSERT INTO purchase_history (user_id, user_name, item_id, item_title, cost, user_message) VALUES (?, ?, ?, ?, ?, ?)',
+    userId, userName, itemId, itemTitle, cost, userMessage
   );
 }
 
@@ -376,19 +386,19 @@ export async function getShopItems() {
   return await db.all('SELECT * FROM shop_items ORDER BY created_at DESC');
 }
 
-export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1, imageScale: number = 1.0) {
+export async function createShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1, imageScale: number = 1.0, requiresMessage: boolean = false) {
   const db = await getDb();
   await db.run(
-    'INSERT INTO shop_items (id, title, description, cost, image_url, category, stock, image_scale) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    id, title, description, cost, imageUrl, category, stock, imageScale
+    'INSERT INTO shop_items (id, title, description, cost, image_url, category, stock, image_scale, requires_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    id, title, description, cost, imageUrl, category, stock, imageScale, requiresMessage ? 1 : 0
   );
 }
 
-export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1, imageScale: number = 1.0) {
+export async function updateShopItem(id: string, title: string, description: string, cost: number, imageUrl: string, category: string, stock: number = -1, imageScale: number = 1.0, requiresMessage: boolean = false) {
   const db = await getDb();
   await db.run(
-    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ?, stock = ?, image_scale = ? WHERE id = ?',
-    title, description, cost, imageUrl, category, stock, imageScale, id
+    'UPDATE shop_items SET title = ?, description = ?, cost = ?, image_url = ?, category = ?, stock = ?, image_scale = ?, requires_message = ? WHERE id = ?',
+    title, description, cost, imageUrl, category, stock, imageScale, requiresMessage ? 1 : 0, id
   );
 }
 

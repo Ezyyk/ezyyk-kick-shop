@@ -13,7 +13,8 @@ interface ShopItemProps {
   imageUrl?: string;
   stock?: number;
   imageScale?: number;
-  onBuy: (id: string, cost: number) => void;
+  requiresMessage?: number;
+  onBuy: (id: string, cost: number, userMessage?: string) => void;
 }
 
 export default function ShopItem({ 
@@ -25,10 +26,20 @@ export default function ShopItem({
   imageUrl, 
   stock = -1, 
   imageScale = 1.0, 
+  requiresMessage = 0,
   onBuy 
 }: ShopItemProps) {
+  const [userMessage, setUserMessage] = React.useState("");
   const canAfford = userPoints >= cost;
   const isSoldOut = stock === 0;
+
+  const handleBuyClick = () => {
+    if (requiresMessage && !userMessage.trim()) {
+      alert("Pro tento předmět musíš vyplnit zprávu!");
+      return;
+    }
+    onBuy(id, cost, userMessage);
+  };
 
   return (
     <div className={`glass-panel ${styles.item}`}>
@@ -57,6 +68,18 @@ export default function ShopItem({
           </div>
         )}
       </div>
+
+      {requiresMessage === 1 && !isSoldOut && (
+        <div className={styles.messageInputWrapper}>
+          <input 
+            type="text"
+            placeholder="Tvoje zpráva (např. Steam URL)..."
+            value={userMessage}
+            onChange={(e) => setUserMessage(e.target.value)}
+            className={styles.messageInput}
+          />
+        </div>
+      )}
       
       <div className={styles.footer}>
         <div className={styles.priceSection}>
@@ -75,7 +98,7 @@ export default function ShopItem({
         
         <div className={styles.actionSection}>
           <Button 
-            onClick={() => onBuy(id, cost)} 
+            onClick={handleBuyClick} 
             disabled={!canAfford || isSoldOut}
             variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
             className={styles.buyButton}

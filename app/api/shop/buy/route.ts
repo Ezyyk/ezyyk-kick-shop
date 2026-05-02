@@ -21,16 +21,16 @@ export async function POST(req: Request) {
   }
   
   const body = await req.json();
-  const { itemId, cost, title } = body;
+  const { itemId, cost, title, userMessage } = body;
   
   if (!itemId || !cost) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  // Check stock
+  // Check item requirements
   const { decrementStock, getDb } = await import("@/lib/db");
   const dbInstance = await getDb();
-  const item = await dbInstance.get('SELECT stock FROM shop_items WHERE id = ?', itemId);
+  const item = await dbInstance.get('SELECT stock, requires_message FROM shop_items WHERE id = ?', itemId);
   
   if (!item) {
     return NextResponse.json({ error: "Item not found" }, { status: 404 });
@@ -38,6 +38,10 @@ export async function POST(req: Request) {
 
   if (item.stock === 0) {
     return NextResponse.json({ error: "Tato položka je již vyprodána!" }, { status: 400 });
+  }
+
+  if (item.requires_message && (!userMessage || userMessage.trim().length === 0)) {
+    return NextResponse.json({ error: "Pro zakoupení tohoto předmětu musíš vyplnit zprávu!" }, { status: 400 });
   }
   
   const success = await spendPoints(user.id, cost);
@@ -52,7 +56,7 @@ export async function POST(req: Request) {
   const updatedUser = await getUserByName(userName);
   
   // Zalogovat nákup do historie
-  await logPurchase(user.id, userName, itemId, title || itemId, cost);
+  await logPurchase(user.id, userName, itemId, title || itemId, cost, userMessage || "");
   
   return NextResponse.json({ success: true, points: updatedUser.points, message: `Úspěšně zakoupeno: ${title || itemId}` });
 }

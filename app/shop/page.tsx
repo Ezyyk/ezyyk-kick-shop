@@ -54,7 +54,7 @@ export default function ShopPage() {
     }
   };
 
-  const handleBuy = async (id: string, cost: number) => {
+  const handleBuy = async (id: string, cost: number, userMessage?: string) => {
     if (!session) return;
     setMessage("");
 
@@ -69,7 +69,12 @@ export default function ShopPage() {
       const res = await fetch("/api/shop/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId: id, cost, title: shopItems.find(i => i.id === id)?.title || id }),
+        body: JSON.stringify({ 
+          itemId: id, 
+          cost, 
+          title: shopItems.find(i => i.id === id)?.title || id,
+          userMessage 
+        }),
       });
       
       const data = await res.json();
@@ -195,6 +200,7 @@ export default function ShopPage() {
                     imageUrl={item.image_url}
                     stock={item.stock}
                     imageScale={item.image_scale}
+                    requiresMessage={item.requires_message}
                     onBuy={handleBuy}
                   />
                 ))}

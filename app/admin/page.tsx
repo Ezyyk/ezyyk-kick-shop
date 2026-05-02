@@ -28,6 +28,7 @@ interface Purchase {
   trade_url: string;
   current_points: number;
   is_sent: number;
+  user_message?: string;
 }
 
 interface ShopItem {
@@ -39,6 +40,7 @@ interface ShopItem {
   category: string;
   stock: number;
   image_scale: number;
+  requires_message: number;
 }
 
 interface AdminGiveaway {
@@ -73,7 +75,7 @@ export default function AdminPage() {
   const [ticketHistory, setTicketHistory] = useState<any[]>([]);
 
   // New / Edit item form
-  const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0 });
+  const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0, requiresMessage: false });
   const [showForm, setShowForm] = useState(false);
   const [isEditingItem, setIsEditingItem] = useState(false);
 
@@ -172,7 +174,7 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json();
         setShopItems(data.items);
-        setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0 });
+        setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0, requiresMessage: false });
         setShowForm(false);
         setIsEditingItem(false);
       } else {
@@ -194,7 +196,8 @@ export default function AdminPage() {
       imageUrl: item.image_url || "",
       category: item.category || "other",
       stock: item.stock ?? -1,
-      imageScale: item.image_scale ?? 1.0
+      imageScale: item.image_scale ?? 1.0,
+      requiresMessage: item.requires_message === 1
     });
     setIsEditingItem(true);
     setShowForm(true);
@@ -482,6 +485,7 @@ export default function AdminPage() {
                       <th>Datum</th>
                       <th>Uživatel</th>
                       <th>Item</th>
+                      <th>Zpráva</th>
                       <th>Cena</th>
                       <th>Akce</th>
                     </tr>
@@ -498,6 +502,16 @@ export default function AdminPage() {
                           </button>
                         </td>
                         <td>{p.item_title}</td>
+                        <td style={{ maxWidth: "200px" }}>
+                          {p.user_message ? (
+                            <div className="admin-td-message" title={p.user_message}>
+                              <MessageSquare size={14} style={{ display: "inline", marginRight: "0.4rem", opacity: 0.5 }} />
+                              {p.user_message}
+                            </div>
+                          ) : (
+                            <span style={{ opacity: 0.3 }}>—</span>
+                          )}
+                        </td>
                         <td className="admin-td-cost">{formatPoints(p.cost)} bodů</td>
 
                         <td className="admin-td-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
@@ -693,6 +707,17 @@ export default function AdminPage() {
                       onChange={(e) => setNewItem({ ...newItem, imageScale: parseFloat(e.target.value) })}
                       style={{ width: "100%", marginTop: "0.5rem" }}
                     />
+                  </div>
+                  <div className="admin-form-group admin-form-wide">
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer" }}>
+                      <input 
+                        type="checkbox" 
+                        checked={newItem.requiresMessage} 
+                        onChange={(e) => setNewItem({ ...newItem, requiresMessage: e.target.checked })}
+                        style={{ width: "18px", height: "18px" }}
+                      />
+                      <span style={{ fontWeight: 600 }}>Vyžadovat zprávu od uživatele (např. Steam URL)</span>
+                    </label>
                   </div>
                 </div>
                 <div className="admin-form-actions">

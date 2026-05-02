@@ -185,3 +185,32 @@
   color: var(--accent-primary);
   opacity: 0.3;
 }
+
+.messageInputWrapper {
+  width: 100%;
+  margin-top: -0.5rem;
+  padding: 0 0.25rem;
+  z-index: 3;
+}
+
+.messageInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: white;
+  font-size: 0.75rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.messageInput:focus {
+  border-color: var(--accent-primary);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+}
+
+.messageInput::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}

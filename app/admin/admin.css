@@ -326,6 +326,15 @@
   font-size: 0.9rem;
 }
 
+.admin-td-message {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .admin-td-empty {
   color: #555;
   font-style: italic;
