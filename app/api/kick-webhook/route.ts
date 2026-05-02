@@ -31,7 +31,7 @@ async function handlePointsCommand(username: string, chatId?: string | number) {
 
 async function handleShopCommand(username: string, chatId?: string | number) {
   await sendChatMessage(
-    `@${username} ezyyk.com`,
+    `@${username} tady je shop ezyyk.com`,
     undefined, chatId
   );
 }

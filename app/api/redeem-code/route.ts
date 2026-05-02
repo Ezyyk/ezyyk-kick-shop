@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { redeemCode, logBotEvent } from '@/lib/db';
+import { redeemCode, logBotEvent, getSetting } from '@/lib/db';
+import { sendChatMessage } from '@/lib/kick-api';
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -18,9 +19,21 @@ export async function POST(request: Request) {
     const result = await redeemCode(cleanCode, session.user.id);
 
     if (result.success) {
+      const username = session.user.name || 'Neznámý uživatel';
+      
+      const chatroomId = await getSetting('last_chatroom_id');
+      if (chatroomId) {
+        // Run in background so we don't slow down the response
+        sendChatMessage(
+          `@${username} chytil kód jako první a získal ${result.points} bodů! ⚡`,
+          undefined,
+          chatroomId
+        ).catch(err => console.error('[REDEEM] Failed to send chat message:', err));
+      }
+
       await logBotEvent(
         'code.redeem',
-        session.user.name || 'unknown',
+        username,
         null,
         result.points || 0,
         `Redeemed code: ${cleanCode}`
