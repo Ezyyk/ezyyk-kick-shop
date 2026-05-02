@@ -186,31 +186,87 @@
   opacity: 0.3;
 }
 
-.messageInputWrapper {
-  width: 100%;
-  margin-top: -0.5rem;
-  padding: 0 0.25rem;
-  z-index: 3;
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1.5rem;
+  animation: fadeIn 0.3s ease;
 }
 
-.messageInput {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
   width: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  max-width: 450px;
+  background: linear-gradient(180deg, rgba(30, 27, 46, 0.95) 0%, rgba(18, 16, 28, 0.98) 100%);
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: left;
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.modal p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.modalTextarea {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  color: white;
-  font-size: 0.75rem;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
   outline: none;
+  resize: none;
   transition: all 0.3s ease;
 }
 
-.messageInput:focus {
+.modalTextarea:focus {
   border-color: var(--accent-primary);
-  background: rgba(0, 0, 0, 0.6);
-  box-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.1);
 }
 
-.messageInput::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.modalActions > button {
+  flex: 1;
 }

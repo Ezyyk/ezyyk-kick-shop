@@ -30,83 +30,107 @@ export default function ShopItem({
   onBuy 
 }: ShopItemProps) {
   const [userMessage, setUserMessage] = React.useState("");
+  const [showModal, setShowModal] = React.useState(false);
   const canAfford = userPoints >= cost;
   const isSoldOut = stock === 0;
 
   const handleBuyClick = () => {
+    if (requiresMessage && !showModal) {
+      setShowModal(true);
+      return;
+    }
+    
     if (requiresMessage && !userMessage.trim()) {
       alert("Pro tento předmět musíš vyplnit zprávu!");
       return;
     }
+    
     onBuy(id, cost, userMessage);
+    setShowModal(false);
   };
 
   return (
-    <div className={`glass-panel ${styles.item}`}>
-      <div className={styles.header}>
-        <h3 className={styles.title}>{title}</h3>
-        {description && (
-          <div className={styles.subtitleBadge}>
-            {description}
-          </div>
-        )}
-      </div>
-      
-      <div className={styles.content}>
-        {imageUrl ? (
-          <div className={styles.imageWrapper}>
-            <img 
-              src={imageUrl} 
-              alt={title} 
-              className={styles.image} 
-              style={{ "--image-scale": imageScale } as React.CSSProperties} 
-            />
-          </div>
-        ) : (
-          <div className={styles.imagePlaceholder}>
-            <GemIcon size={32} />
-          </div>
-        )}
-      </div>
-
-      {requiresMessage === 1 && !isSoldOut && (
-        <div className={styles.messageInputWrapper}>
-          <input 
-            type="text"
-            placeholder="Tvoje zpráva (např. Steam URL)..."
-            value={userMessage}
-            onChange={(e) => setUserMessage(e.target.value)}
-            className={styles.messageInput}
-          />
-        </div>
-      )}
-      
-      <div className={styles.footer}>
-        <div className={styles.priceSection}>
-          <div className={styles.costBox}>
-            <div className={styles.cost}>
-              <GemIcon size={18} color="#00e5ff" />
-              <span>{formatPoints(cost)}</span>
+    <>
+      <div className={`glass-panel ${styles.item}`}>
+        <div className={styles.header}>
+          <h3 className={styles.title}>{title}</h3>
+          {description && (
+            <div className={styles.subtitleBadge}>
+              {description}
             </div>
-            {stock !== -1 && (
-              <div className={styles.stockBadge}>
-                {isSoldOut ? "VYPRODÁNO" : `${stock} KS SKLADEM`}
-              </div>
-            )}
-          </div>
+          )}
         </div>
         
-        <div className={styles.actionSection}>
-          <Button 
-            onClick={handleBuyClick} 
-            disabled={!canAfford || isSoldOut}
-            variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
-            className={styles.buyButton}
-          >
-            {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
-          </Button>
+        <div className={styles.content}>
+          {imageUrl ? (
+            <div className={styles.imageWrapper}>
+              <img 
+                src={imageUrl} 
+                alt={title} 
+                className={styles.image} 
+                style={{ "--image-scale": imageScale } as React.CSSProperties} 
+              />
+            </div>
+          ) : (
+            <div className={styles.imagePlaceholder}>
+              <GemIcon size={32} />
+            </div>
+          )}
+        </div>
+        
+        <div className={styles.footer}>
+          <div className={styles.priceSection}>
+            <div className={styles.costBox}>
+              <div className={styles.cost}>
+                <GemIcon size={18} color="#00e5ff" />
+                <span>{formatPoints(cost)}</span>
+              </div>
+              {stock !== -1 && (
+                <div className={styles.stockBadge}>
+                  {isSoldOut ? "VYPRODÁNO" : `${stock} KS SKLADEM`}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className={styles.actionSection}>
+            <Button 
+              onClick={handleBuyClick} 
+              disabled={!canAfford || isSoldOut}
+              variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
+              className={styles.buyButton}
+            >
+              {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+
+      {showModal && (
+        <div className={styles.modalOverlay}>
+          <div className={`glass-panel ${styles.modal}`}>
+            <h3>Zadej údaje k objednávce</h3>
+            <p>Tento předmět vyžaduje doplňující informace (např. Steam URL nebo herní jméno).</p>
+            
+            <textarea 
+              placeholder="Tvoje zpráva..."
+              value={userMessage}
+              onChange={(e) => setUserMessage(e.target.value)}
+              className={styles.modalTextarea}
+              autoFocus
+            />
+            
+            <div className={styles.modalActions}>
+              <Button onClick={() => setShowModal(false)} variant="secondary">
+                Zrušit
+              </Button>
+              <Button onClick={handleBuyClick} variant="primary">
+                Odeslat a koupit
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
