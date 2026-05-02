@@ -245,25 +245,19 @@ a:hover {
 
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
   margin-top: 2rem;
   width: 100%;
 }
 
 @media (max-width: 1200px) {
   .shop-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .shop-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .shop-grid {
     grid-template-columns: 1fr;
   }
@@ -383,23 +377,7 @@ a:hover {
   margin: 0 auto;
 }
 
-.item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem;
-  text-align: center;
-  height: 100%;
-  min-height: 280px;
-  gap: 0.6rem;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 
-.item:hover {
-  border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 25px rgba(138, 43, 226, 0.25), inset 0 0 20px rgba(138, 43, 226, 0.05) !important;
-  transform: translateY(-8px);
-}
 
 .hero-section {
   text-align: center;

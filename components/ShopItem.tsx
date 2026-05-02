@@ -32,47 +32,57 @@ export default function ShopItem({
 
   return (
     <div className={`glass-panel ${styles.item}`}>
-      <h3 className={styles.title}>{title}</h3>
+      <div className={styles.header}>
+        <h3 className={styles.title}>{title}</h3>
+        {description && (
+          <div className={styles.subtitleBadge}>
+            {description}
+          </div>
+        )}
+      </div>
       
-      {imageUrl ? (
-        <div className={styles.imageWrapper}>
-          <img 
-            src={imageUrl} 
-            alt={title} 
-            className={styles.image} 
-            style={{ "--image-scale": imageScale } as React.CSSProperties} 
-          />
-        </div>
-      ) : (
-        <div className={styles.imagePlaceholder}>
-          <GemIcon size={32} />
-        </div>
-      )}
-      
-      <p className={styles.description}>{description || " "}</p>
-
+      <div className={styles.content}>
+        {imageUrl ? (
+          <div className={styles.imageWrapper}>
+            <img 
+              src={imageUrl} 
+              alt={title} 
+              className={styles.image} 
+              style={{ "--image-scale": imageScale } as React.CSSProperties} 
+            />
+          </div>
+        ) : (
+          <div className={styles.imagePlaceholder}>
+            <GemIcon size={32} />
+          </div>
+        )}
+      </div>
       
       <div className={styles.footer}>
-        <div className={styles.costInfo}>
-          <div className={styles.cost}>
-            <GemIcon size={20} />
-            <span>{formatPoints(cost)}</span>
+        <div className={styles.priceSection}>
+          <div className={styles.costBox}>
+            <div className={styles.cost}>
+              <GemIcon size={22} color="#00e5ff" />
+              <span>{formatPoints(cost)}</span>
+            </div>
+            {stock !== -1 && (
+              <div className={styles.stockBadge}>
+                {isSoldOut ? "VYPRODÁNO" : `${stock} KS SKLADEM`}
+              </div>
+            )}
           </div>
-          {stock !== -1 && (
-            <span className={styles.stock}>
-              {isSoldOut ? "Vyprodáno" : `${stock} ks skladem`}
-            </span>
-          )}
         </div>
         
-        <Button 
-          onClick={() => onBuy(id, cost)} 
-          disabled={!canAfford || isSoldOut}
-          variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
-          style={{ width: "100%" }}
-        >
-          {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
-        </Button>
+        <div className={styles.actionSection}>
+          <Button 
+            onClick={() => onBuy(id, cost)} 
+            disabled={!canAfford || isSoldOut}
+            variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
+            className={styles.buyButton}
+          >
+            {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
+          </Button>
+        </div>
       </div>
     </div>
   );
