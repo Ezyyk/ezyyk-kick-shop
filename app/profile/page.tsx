@@ -73,8 +73,8 @@ export default function ProfilePage() {
     <div className="container">
       <Header />
 
-      <main className="main-content" style={{ maxWidth: "600px", marginTop: "2rem" }}>
-        <section className="glass-panel" style={{ width: "100%", padding: "3rem", textAlign: "left" }}>
+      <main className="main-content" style={{ maxWidth: "700px", marginTop: "2rem" }}>
+        <section className="glass-panel" style={{ width: "100%", padding: "clamp(1.5rem, 4vw, 3rem)", textAlign: "left" }}>
 
           <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2.5rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "1.5rem" }}>
             {session?.user?.image ? (
@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
         </section>
 
-        <section className="glass-panel" style={{ width: "100%", padding: "3rem", textAlign: "left", marginTop: "2rem" }}>
+        <section className="glass-panel" style={{ width: "100%", padding: "clamp(1.5rem, 4vw, 3rem)", textAlign: "left", marginTop: "2rem" }}>
           <h2 style={{ marginBottom: "1.5rem", fontSize: "1.25rem" }}>Historie nákupů</h2>
           {purchases.length === 0 ? (
             <p style={{ color: "var(--text-secondary)" }}>Zatím žádné nákupy.</p>
@@ -187,7 +187,7 @@ export default function ProfilePage() {
           )}
         </section>
 
-        <section className="glass-panel" style={{ width: "100%", padding: "3rem", textAlign: "left", marginTop: "2rem" }}>
+        <section className="glass-panel" style={{ width: "100%", padding: "clamp(1.5rem, 4vw, 3rem)", textAlign: "left", marginTop: "2rem" }}>
           <h2 style={{ marginBottom: "1.5rem", fontSize: "1.25rem" }}>Historie Giveaways</h2>
           {giveawayHistory.length === 0 ? (
             <p style={{ color: "var(--text-secondary)" }}>Zatím žádná účast v giveaways.</p>

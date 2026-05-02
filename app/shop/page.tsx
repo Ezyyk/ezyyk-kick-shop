@@ -131,7 +131,7 @@ export default function ShopPage() {
           <>
             {/* CATEGORY TABS & SORTING */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "wrap", gap: "1rem" }}>
-              <div className="shop-category-tabs" style={{ width: "auto", padding: 0 }}>
+              <div className="shop-category-tabs" style={{ width: "auto", padding: 0, flex: "1 1 auto" }}>
                 {CATEGORIES.map(cat => (
                   <button
                     key={cat.key}
