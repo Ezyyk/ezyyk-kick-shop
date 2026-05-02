@@ -109,20 +109,6 @@ function BotTab() {
     setActionLoading(null);
   };
 
-  const handleToggleLive = async () => {
-    setActionLoading("toggle-live");
-    try {
-      const res = await fetch("/api/admin/bot/toggle-live", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        loadBotData();
-      } else {
-        alert("❌ " + (data.error || "Chyba"));
-      }
-    } catch { alert("Chyba připojení"); }
-    setActionLoading(null);
-  };
-
   const handleSubscribeWebhooks = async () => {
     setActionLoading("subscribe");
     try {
@@ -180,32 +166,13 @@ function BotTab() {
             <div style={{
               background: botStatus.isLive ? "rgba(76,175,80,0.1)" : "rgba(255,255,255,0.03)",
               border: `1px solid ${botStatus.isLive ? "rgba(76,175,80,0.3)" : "var(--glass-border)"}`,
-              borderRadius: "12px", padding: "1rem", textAlign: "center", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
+              borderRadius: "12px", padding: "1rem", textAlign: "center"
             }}>
               <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>{botStatus.isLive ? "🔴" : "⚫"}</div>
               <div style={{ fontWeight: 700, color: botStatus.isLive ? "#4CAF50" : "#888" }}>
                 {botStatus.isLive ? "LIVE" : "OFFLINE"}
               </div>
-              <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.25rem", marginBottom: "0.5rem" }}>Stream status</div>
-              
-              <button 
-                onClick={handleToggleLive}
-                disabled={actionLoading === "toggle-live"}
-                style={{ 
-                  padding: "0.2rem 0.6rem", 
-                  fontSize: "0.7rem", 
-                  background: "rgba(255,255,255,0.1)", 
-                  border: "1px solid rgba(255,255,255,0.2)", 
-                  borderRadius: "4px", 
-                  color: "#fff", 
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.2)"}
-                onMouseOut={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-              >
-                {actionLoading === "toggle-live" ? "..." : "Přepnout"}
-              </button>
+              <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.25rem" }}>Stream status</div>
             </div>
 
             {/* Bot token */}
