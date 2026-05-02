@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import ShopItem from "@/components/ShopItem";
 import Header from "@/components/Header";
-import { LogIn, ShieldAlert, Gamepad2, Pickaxe, Package } from "lucide-react";
+import { ShoppingBag, ShoppingCart, Gamepad2, Pickaxe, Package, Info } from "lucide-react";
+
 import Button from "@/components/Button";
 
 type Category = "cs2" | "minecraft" | "other";
@@ -56,6 +57,14 @@ export default function ShopPage() {
   const handleBuy = async (id: string, cost: number) => {
     if (!session) return;
     setMessage("");
+
+    // Optimistic update
+    const previousPoints = points;
+    setPoints(prev => prev - cost);
+    
+    // Notify Header of the update
+    window.dispatchEvent(new CustomEvent('points-update', { detail: { points: points - cost } }));
+
     try {
       const res = await fetch("/api/shop/buy", {
         method: "POST",
@@ -67,15 +76,23 @@ export default function ShopPage() {
       if (res.ok) {
         setPoints(data.points);
         setMessage(data.message);
+        // Sync header again with actual value from server
+        window.dispatchEvent(new CustomEvent('points-update', { detail: { points: data.points } }));
       } else {
+        // Rollback on error
+        setPoints(previousPoints);
+        window.dispatchEvent(new CustomEvent('points-update', { detail: { points: previousPoints } }));
         setMessage(data.error || "Došlo k chybě");
       }
     } catch (e) {
+      setPoints(previousPoints);
+      window.dispatchEvent(new CustomEvent('points-update', { detail: { points: previousPoints } }));
       setMessage("Došlo k chybě při nákupu");
     }
     
     setTimeout(() => setMessage(""), 5000);
   };
+
 
   const currentItems = shopItems
     .filter(item => item.category === activeCategory)
@@ -87,19 +104,22 @@ export default function ShopPage() {
 
       <main className="main-content">
         
-        <section className="hero-section">
-          <h1 className="hero-title" style={{ fontSize: "2.8rem" }}>
-            <ShieldAlert size={36} color="var(--accent-primary)" style={{ display: "inline", verticalAlign: "middle", marginRight: "0.5rem" }} />
+        <section className="hero-section" style={{ width: "100%", position: "relative" }}>
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "300px", height: "100px", background: "var(--accent-primary)", filter: "blur(100px)", opacity: 0.1, zIndex: -1 }}></div>
+          <h1 className="hero-title" style={{ fontSize: "3.5rem", marginBottom: "0.5rem" }}>
+            <ShoppingBag size={42} color="var(--accent-primary)" style={{ display: "inline", verticalAlign: "middle", marginRight: "0.75rem", filter: "drop-shadow(0 0 10px var(--accent-glow))" }} />
             Shop
           </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem", marginTop: "0.5rem" }}>
-            Utrácej nasbírané body za odměny
+          <p style={{ color: "var(--text-secondary)", fontSize: "1.2rem", fontWeight: 500 }}>
+            Utrácej nasbírané body za exkluzivní odměny
           </p>
         </section>
 
+
         {!session && status !== "loading" ? (
           <div style={{ textAlign: "center", padding: "4rem", background: "rgba(0,0,0,0.3)", borderRadius: "var(--radius-md)", border: "1px solid var(--glass-border)", width: "100%" }}>
-            <ShieldAlert size={48} color="var(--text-secondary)" style={{ opacity: 0.5, margin: "0 auto 1rem auto" }} />
+            <ShoppingBag size={48} color="var(--text-secondary)" style={{ opacity: 0.5, margin: "0 auto 1rem auto" }} />
+
             <h2 style={{ margin: 0, color: "var(--text-secondary)", fontWeight: 500 }}>Pro zobrazení shopu se musíš přihlásit</h2>
           </div>
         ) : session ? (
@@ -143,17 +163,25 @@ export default function ShopPage() {
             <section style={{ width: "100%" }}>
               {message && (
                 <div style={{ 
-                  padding: "1rem", 
-                  marginBottom: "1.5rem", 
-                  background: "rgba(138, 43, 226, 0.2)", 
+                  position: "fixed",
+                  bottom: "2rem",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  padding: "1rem 2rem", 
+                  background: "rgba(138, 43, 226, 0.9)", 
+                  backdropFilter: "blur(10px)",
                   border: "1px solid var(--accent-primary)",
-                  borderRadius: "var(--radius-sm)",
+                  borderRadius: "50px",
                   color: "white",
-                  textAlign: "center"
+                  textAlign: "center",
+                  zIndex: 1000,
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow)",
+                  animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
                 }}>
                   {message}
                 </div>
               )}
+
 
               <div className="shop-grid">
                 {currentItems.map((item) => (

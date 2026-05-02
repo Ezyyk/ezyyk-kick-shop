@@ -4,6 +4,10 @@ import { useSession, signIn } from "next-auth/react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import { Gift, Gem, Clock, Trophy, LogIn, Ticket, User, Minus, Plus } from "lucide-react";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "@/components/GemIcon";
+
+
 
 interface Giveaway {
   id: string;
@@ -166,7 +170,8 @@ export default function GiveawaysPage() {
                     </div>
 
                     <h3 className="gw-title">{gw.title}</h3>
-                    {gw.description && <p className="gw-desc">{gw.description}</p>}
+                    <p className="gw-desc">{gw.description || " "}</p>
+
 
                     {/* Timer / Winner */}
                     {isActive ? (
@@ -188,7 +193,9 @@ export default function GiveawaysPage() {
                         <Ticket size={14} /> {gw.total_tickets} ticketů
                       </div>
                       <div className="gw-info-item">
-                        <Gem size={14} color="#00e5ff" /> {gw.ticket_cost} / ticket
+                        <GemIcon size={14} /> {formatPoints(gw.ticket_cost)} / ticket
+
+
                       </div>
                     </div>
 
@@ -212,7 +219,8 @@ export default function GiveawaysPage() {
                             disabled={points < totalCost}
                             style={{ flex: 1, fontSize: "0.85rem" }}
                           >
-                            <Ticket size={16} /> Koupit ({totalCost.toLocaleString("cs-CZ")} bodů)
+                            <Ticket size={16} /> Koupit ({formatPoints(totalCost)} bodů)
+
                           </Button>
                         </div>
                       ) : (

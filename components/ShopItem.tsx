@@ -1,7 +1,8 @@
 import React from "react";
 import styles from "./ShopItem.module.css";
 import Button from "./Button";
-import { Gem } from "lucide-react";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "./GemIcon";
 
 interface ShopItemProps {
   id: string;
@@ -15,7 +16,17 @@ interface ShopItemProps {
   onBuy: (id: string, cost: number) => void;
 }
 
-export default function ShopItem({ id, title, description, cost, userPoints, imageUrl, stock = -1, imageScale = 1.0, onBuy }: ShopItemProps) {
+export default function ShopItem({ 
+  id, 
+  title, 
+  description, 
+  cost, 
+  userPoints, 
+  imageUrl, 
+  stock = -1, 
+  imageScale = 1.0, 
+  onBuy 
+}: ShopItemProps) {
   const canAfford = userPoints >= cost;
   const isSoldOut = stock === 0;
 
@@ -34,24 +45,35 @@ export default function ShopItem({ id, title, description, cost, userPoints, ima
         </div>
       ) : (
         <div className={styles.imagePlaceholder}>
-          <Gem size={32} opacity={0.5} />
+          <GemIcon size={32} />
         </div>
       )}
       
-      <p className={styles.description}>{description}</p>
+      <p className={styles.description}>{description || " "}</p>
+
       
-      <div className={styles.cost}>
-        <Gem size={18} color="#00e5ff" /> {cost} {stock !== -1 && <span className={styles.stock}>({stock} ks)</span>}
+      <div className={styles.footer}>
+        <div className={styles.costInfo}>
+          <div className={styles.cost}>
+            <GemIcon size={20} />
+            <span>{formatPoints(cost)}</span>
+          </div>
+          {stock !== -1 && (
+            <span className={styles.stock}>
+              {isSoldOut ? "Vyprodáno" : `${stock} ks skladem`}
+            </span>
+          )}
+        </div>
+        
+        <Button 
+          onClick={() => onBuy(id, cost)} 
+          disabled={!canAfford || isSoldOut}
+          variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
+          style={{ width: "100%" }}
+        >
+          {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
+        </Button>
       </div>
-      
-      <Button 
-        onClick={() => onBuy(id, cost)} 
-        disabled={!canAfford || isSoldOut}
-        variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
-        style={{ width: "100%", marginTop: "auto" }}
-      >
-        {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
-      </Button>
     </div>
   );
 }

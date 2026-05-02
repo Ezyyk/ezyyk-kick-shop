@@ -2,6 +2,10 @@
 import "./admin.css";
 import React, { useState, useEffect } from "react";
 import { Lock, Users, ShoppingCart, Package, Trash2, Plus, ExternalLink, ArrowLeft, Search, Edit3, Save, X, Gift, Trophy, Ticket, MessageSquare, Gem } from "lucide-react";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "@/components/GemIcon";
+
+
 import ImageUploader from "@/components/ImageUploader";
 
 interface User {
@@ -494,7 +498,8 @@ export default function AdminPage() {
                           </button>
                         </td>
                         <td>{p.item_title}</td>
-                        <td className="admin-td-cost">{p.cost.toLocaleString()} bodů</td>
+                        <td className="admin-td-cost">{formatPoints(p.cost)} bodů</td>
+
                         <td className="admin-td-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                           <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.8rem", cursor: "pointer", background: p.is_sent ? "rgba(76, 175, 80, 0.2)" : "rgba(255,255,255,0.05)", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "1px solid", borderColor: p.is_sent ? "#4CAF50" : "var(--glass-border)" }}>
                             <input 
@@ -541,7 +546,8 @@ export default function AdminPage() {
                     {filteredUsers.map((u) => (
                       <tr key={u.id}>
                         <td className="admin-td-name">{u.name}</td>
-                        <td className="admin-td-points">{u.points.toLocaleString()}</td>
+                        <td className="admin-td-points">{formatPoints(u.points)}</td>
+
                         <td>
                           {u.trade_url ? (
                             <a href={u.trade_url} target="_blank" rel="noreferrer" className="admin-trade-link">
@@ -740,7 +746,9 @@ export default function AdminPage() {
                     </div>
 
                     <div className="shop-col-price">
-                      <Gem size={16} /> {item.cost.toLocaleString()}
+                      <GemIcon size={16} /> {formatPoints(item.cost)}
+
+
                     </div>
 
                     <div className="shop-col-stock">
@@ -1116,7 +1124,8 @@ export default function AdminPage() {
                     </div>
                   ) : (
                     <span>
-                      {selectedUser.points.toLocaleString()} bodů
+                      {formatPoints(selectedUser.points)} bodů
+
                       <button className="admin-btn-icon" onClick={() => { setEditingPoints(true); setEditPointsValue(selectedUser.points); }}>
                         <Edit3 size={14} />
                       </button>
@@ -1147,7 +1156,8 @@ export default function AdminPage() {
                   purchases.filter(p => p.user_id === selectedUser.id).map(p => (
                     <div key={p.id} className="admin-purchase-item">
                       <span className="admin-purchase-title">{p.item_title}</span>
-                      <span className="admin-purchase-cost">{p.cost.toLocaleString()} bodů</span>
+                      <span className="admin-purchase-cost">{formatPoints(p.cost)} bodů</span>
+
                       <span className="admin-purchase-date">{new Date(p.purchased_at.replace(" ", "T") + "Z").toLocaleString("cs-CZ")}</span>
                     </div>
                   ))

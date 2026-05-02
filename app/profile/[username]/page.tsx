@@ -5,6 +5,10 @@ import Footer from "@/components/Footer";
 import { User as UserIcon, Gem, ShoppingBag, Gift, Calendar, ExternalLink, Trophy, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "@/components/GemIcon";
+
+
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -104,7 +108,9 @@ export default function PublicProfilePage() {
               </span>
             )}
             <span style={{ background: "rgba(138, 43, 226, 0.15)", color: "var(--accent-primary)", padding: "0.3rem 0.8rem", borderRadius: "50px", fontSize: "0.85rem", fontWeight: "600", border: "1px solid var(--glass-border)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Gem size={14} /> {user.points.toLocaleString()} bodů
+              <GemIcon size={14} /> {formatPoints(user.points)} bodů
+
+
             </span>
           </div>
 

@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import { Save, User } from "lucide-react";
+import { formatPoints } from "@/lib/format";
+
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -176,7 +178,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div style={{ color: "var(--accent-primary)", fontWeight: "bold" }}>
-                    -{p.cost.toLocaleString()} bodů
+                    -{formatPoints(p.cost)} bodů
+
                   </div>
                 </div>
               ))}

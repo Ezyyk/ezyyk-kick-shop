@@ -5,6 +5,44 @@ import { usePathname } from "next/navigation";
 import { Gem, LogOut, LogIn, Home, ShoppingBag, Trophy, Gift, Ticket, Package } from "lucide-react";
 import Link from "next/link";
 import Button from "./Button";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "./GemIcon";
+
+function RollingNumber({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(value);
+
+  useEffect(() => {
+    if (value === displayValue) return;
+    
+    const duration = 800; // ms
+    const startTime = performance.now();
+    const startValue = displayValue;
+    const diff = value - startValue;
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease out quad
+      const ease = 1 - (1 - progress) * (1 - progress);
+      const current = Math.floor(startValue + diff * ease);
+      
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [value]);
+
+  return <span>{formatPoints(displayValue)}</span>;
+}
+
+
+
+
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
@@ -14,25 +52,83 @@ const NAV_ITEMS = [
   { href: "/odeslane-odmeny", label: "Odeslané odměny", icon: Package },
 ];
 
+function PointsChange({ points }: { points: number }) {
+  const [prevPoints, setPrevPoints] = useState(points);
+  const [change, setChange] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (points < prevPoints) {
+      setChange(points - prevPoints);
+      const timer = setTimeout(() => setChange(null), 2000);
+      setPrevPoints(points);
+      return () => clearTimeout(timer);
+    }
+    setPrevPoints(points);
+  }, [points]);
+
+  if (!change) return null;
+
+  return (
+    <div 
+      style={{ 
+        position: "absolute", 
+        top: "-25px", 
+        right: "10px", 
+        color: "#ff4444", 
+        fontWeight: "900",
+        fontSize: "1.1rem",
+        animation: "floatOut 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        pointerEvents: "none",
+        textShadow: "0 0 10px rgba(255, 68, 68, 0.5)"
+      }}
+    >
+      {change.toLocaleString()}
+    </div>
+
+  );
+}
+
 export default function Header() {
   const { data: session, status } = useSession();
   const [points, setPoints] = useState(0);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const [prevPoints, setPrevPoints] = useState(0);
   const pathname = usePathname();
+
 
   const fetchPoints = () => {
     if (session) {
       fetch("/api/points/ping")
         .then((res) => res.json())
         .then((data) => {
-          if (data.points !== undefined) setPoints(data.points);
+          if (data.points !== undefined) {
+            setPoints(data.points);
+            setPrevPoints(data.points);
+          }
         })
         .catch((e) => console.error("Chyba při načítání bodů", e));
     }
   };
 
+
   useEffect(() => {
     fetchPoints();
-  }, [session]);
+    
+    const handleUpdate = (e: any) => {
+      if (e.detail?.points !== undefined) {
+        if (e.detail.points < points) {
+          setIsFlashing(true);
+          setTimeout(() => setIsFlashing(false), 600);
+        }
+        setPoints(e.detail.points);
+      }
+    };
+
+    window.addEventListener('points-update', handleUpdate);
+    return () => window.removeEventListener('points-update', handleUpdate);
+  }, [session, points]);
+
+
 
   return (
     <header className="header" style={{ padding: "1.5rem 0" }}>
@@ -115,10 +211,17 @@ export default function Header() {
                 }
               }}
             >
-              <div className="points-display">
-                <Gem size={18} />
-                <span>{points}</span> bodů
+              <div className={`points-display ${isFlashing ? "flash-red" : ""}`} style={{ position: "relative" }}>
+
+                <GemIcon size={20} />
+
+                <RollingNumber value={points} /> bodů
+
+                
+                {/* Points Change Animation */}
+                <PointsChange points={points} />
               </div>
+
             </Link>
             
             <Link 

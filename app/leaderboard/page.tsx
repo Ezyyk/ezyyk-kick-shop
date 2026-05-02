@@ -3,6 +3,10 @@ import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Trophy, Gem, ChevronLeft, ChevronRight, Crown, Medal, Award } from "lucide-react";
 import Link from "next/link";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "@/components/GemIcon";
+
+
 
 interface LeaderboardUser {
   name: string;
@@ -88,8 +92,10 @@ export default function LeaderboardPage() {
                       </div>
                       <div className="lb-name">{user.name}</div>
                       <div className="lb-points">
-                        <Gem size={16} />
-                        <span>{user.points.toLocaleString("cs-CZ")}</span>
+                        <GemIcon size={16} />
+
+                        <span>{formatPoints(user.points)}</span>
+
                       </div>
                     </Link>
                   );

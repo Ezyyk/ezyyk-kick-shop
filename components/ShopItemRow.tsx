@@ -1,6 +1,10 @@
 import React from "react";
 import { Gem } from "lucide-react";
 import Button from "./Button";
+import { formatPoints } from "@/lib/format";
+import GemIcon from "./GemIcon";
+
+
 
 interface ShopItemRowProps {
   id: string;
@@ -34,7 +38,8 @@ export default function ShopItemRow({
           <img src={imageUrl} alt={title} className="shop-item-thumb" />
         ) : (
           <div className="shop-item-thumb" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Gem size={20} opacity={0.3} />
+            <GemIcon size={20} />
+
           </div>
         )}
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -50,7 +55,9 @@ export default function ShopItemRow({
       </div>
 
       <div className="shop-col-price">
-        <Gem size={16} /> {cost.toLocaleString()}
+        <GemIcon size={16} /> {formatPoints(cost)}
+
+
       </div>
 
       <div className="shop-col-stock">
