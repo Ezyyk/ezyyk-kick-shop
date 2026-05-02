@@ -8,6 +8,7 @@ import {
   deactivateOldCodes,
   checkAndDrawGiveaways,
   getSetting,
+  setSetting,
 } from '@/lib/db';
 import { sendChatMessage } from '@/lib/kick-api';
 
@@ -23,6 +24,8 @@ function generateRandomCode(length: number = 5) {
 // Point values
 const CHAT_POINTS_NORMAL = 5;
 const CHAT_POINTS_SUB = 10;
+const CODE_DROP_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const CODE_DROP_POINTS = 10;
 
 /**
  * This endpoint is called every 5 minutes (via cron or setInterval)
@@ -38,6 +41,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    // ===== 1. AWARD CHAT ACTIVITY POINTS =====
     const activeChatters = await getActiveChattersDueForPoints();
     let totalAwarded = 0;
 
@@ -51,46 +55,64 @@ export async function POST(request: Request) {
         chatter.username,
         chatter.kick_user_id,
         points,
-        chatter.is_sub ? 'sub bonus' : 'regular'
+        chatter.is_sub ? 'sub bonus (10 pts)' : 'regular (5 pts)'
       );
       
       totalAwarded++;
     }
 
-    console.log(`[BOT-TICK] Awarded points to ${totalAwarded} active chatters`);
+    if (totalAwarded > 0) {
+      console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
+    }
 
-    // --- CODE DROP LOGIC ---
-    // Only if stream is live (checked via webhook)
+    // ===== 2. CODE DROP LOGIC (every 15 minutes when live) =====
     const isLive = await getSetting('is_live', 'false') === 'true';
     let codeDropped = false;
 
     if (isLive) {
-      // 20% chance to drop a code every 5 minutes (~once per 25 minutes on average)
-      if (Math.random() < 0.20) {
+      const lastCodeDropStr = await getSetting('last_code_drop_at', '0');
+      const lastCodeDrop = parseInt(lastCodeDropStr) || 0;
+      const now = Date.now();
+
+      if (now - lastCodeDrop >= CODE_DROP_INTERVAL_MS) {
         // Deactivate any previous unredeemed codes first
         await deactivateOldCodes();
 
         const code = generateRandomCode(5);
-        await createRedeemCode(code, 10);
+        await createRedeemCode(code, CODE_DROP_POINTS);
+        await setSetting('last_code_drop_at', String(now));
         
         const chatroomId = await getSetting('last_chatroom_id');
-        await sendChatMessage(`🎁 CODE DROP! První kdo napíše kód [ ${code} ] na ezyyk.com/codes získá 10 bodů! ⚡`, undefined, chatroomId || undefined);
+        await sendChatMessage(
+          `🎁 CODE DROP! První kdo zadá kód [ ${code} ] na ezyyk.com/codes získá ${CODE_DROP_POINTS} bodů! ⚡`,
+          undefined,
+          chatroomId || undefined
+        );
         await logBotEvent('code.drop', 'system', null, 0, `Code: ${code}`);
         codeDropped = true;
         console.log(`[BOT-TICK] 🎁 Code dropped: ${code}`);
       }
     }
     
-    // --- GIVEAWAY DRAW LOGIC ---
+    // ===== 3. GIVEAWAY DRAW LOGIC =====
     const drawnGiveaways = await checkAndDrawGiveaways();
     if (drawnGiveaways > 0) {
       console.log(`[BOT-TICK] 🎁 Drawn ${drawnGiveaways} giveaways`);
+      
+      // Announce giveaway winners in chat
+      const chatroomId = await getSetting('last_chatroom_id');
+      if (chatroomId) {
+        // We could fetch the drawn giveaways and announce them, 
+        // but for now just log it
+      }
     }
 
     return NextResponse.json({ 
       success: true, 
       usersAwarded: totalAwarded,
-      codeDropped: codeDropped
+      codeDropped,
+      isLive,
+      giveawaysDrawn: drawnGiveaways,
     });
   } catch (error) {
     console.error('[BOT-TICK] Error:', error);

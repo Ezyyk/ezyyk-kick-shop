@@ -60,6 +60,266 @@ interface AdminGiveaway {
 
 type Tab = "purchases" | "users" | "items" | "giveaways" | "bot" | "ticket_history";
 
+// ========== BOT TAB COMPONENT ==========
+function BotTab() {
+  const [botStatus, setBotStatus] = useState<any>(null);
+  const [botEvents, setBotEvents] = useState<any[]>([]);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadBotData();
+  }, []);
+
+  const loadBotData = async () => {
+    setLoadingStatus(true);
+    try {
+      const [statusRes, eventsRes] = await Promise.all([
+        fetch("/api/admin/bot/status"),
+        fetch("/api/admin/bot-events?limit=30"),
+      ]);
+      if (statusRes.ok) setBotStatus(await statusRes.json());
+      if (eventsRes.ok) {
+        const data = await eventsRes.json();
+        setBotEvents(data.events || []);
+      }
+    } catch (e) {
+      console.error("Error loading bot data:", e);
+    }
+    setLoadingStatus(false);
+  };
+
+  const handleTestMessage = async () => {
+    setActionLoading("test");
+    try {
+      const res = await fetch("/api/admin/bot/test-message", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ " + data.message);
+      } else {
+        alert("❌ " + (data.error || "Chyba"));
+      }
+    } catch { alert("Chyba připojení"); }
+    setActionLoading(null);
+  };
+
+  const handleSubscribeWebhooks = async () => {
+    setActionLoading("subscribe");
+    try {
+      const res = await fetch("/api/admin/bot/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ " + data.message + "\nEventy: " + data.events.join(", "));
+        loadBotData();
+      } else {
+        alert("❌ " + (data.error || "Chyba"));
+      }
+    } catch { alert("Chyba připojení"); }
+    setActionLoading(null);
+  };
+
+  const handleDropCode = async () => {
+    if (!confirm("Opravdu chceš odeslat nový kód do chatu?")) return;
+    setActionLoading("code");
+    try {
+      const res = await fetch("/api/admin/bot/drop-code", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ Kód [ ${data.code} ] byl odeslán do chatu!`);
+        loadBotData();
+      } else {
+        alert("❌ " + (data.error || "Chyba"));
+      }
+    } catch { alert("Chyba připojení"); }
+    setActionLoading(null);
+  };
+
+  return (
+    <div className="admin-panel">
+      <div className="admin-section-header">
+        <h2><MessageSquare size={20} /> Bot & Kódy</h2>
+        <button className="admin-btn-small" onClick={loadBotData} style={{ marginLeft: "auto" }}>
+          🔄 Obnovit
+        </button>
+      </div>
+
+      {/* BOT STATUS */}
+      <div className="glass-panel" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
+        <h3 style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          🤖 Stav bota
+        </h3>
+        {loadingStatus ? (
+          <p style={{ color: "#aaa" }}>Načítání...</p>
+        ) : botStatus ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+            {/* Stream status */}
+            <div style={{
+              background: botStatus.isLive ? "rgba(76,175,80,0.1)" : "rgba(255,255,255,0.03)",
+              border: `1px solid ${botStatus.isLive ? "rgba(76,175,80,0.3)" : "var(--glass-border)"}`,
+              borderRadius: "12px", padding: "1rem", textAlign: "center"
+            }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>{botStatus.isLive ? "🔴" : "⚫"}</div>
+              <div style={{ fontWeight: 700, color: botStatus.isLive ? "#4CAF50" : "#888" }}>
+                {botStatus.isLive ? "LIVE" : "OFFLINE"}
+              </div>
+              <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.25rem" }}>Stream status</div>
+            </div>
+
+            {/* Bot token */}
+            <div style={{
+              background: botStatus.botTokenConfigured ? "rgba(76,175,80,0.1)" : "rgba(255,68,68,0.1)",
+              border: `1px solid ${botStatus.botTokenConfigured ? "rgba(76,175,80,0.3)" : "rgba(255,68,68,0.3)"}`,
+              borderRadius: "12px", padding: "1rem", textAlign: "center"
+            }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>{botStatus.botTokenConfigured ? "✅" : "❌"}</div>
+              <div style={{ fontWeight: 700, color: botStatus.botTokenConfigured ? "#4CAF50" : "#ff4444" }}>
+                {botStatus.botTokenConfigured ? "Nastaven" : "Chybí"}
+              </div>
+              <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.25rem" }}>Bot Token</div>
+            </div>
+
+            {/* Next code drop */}
+            <div style={{
+              background: "rgba(138,43,226,0.08)",
+              border: "1px solid rgba(138,43,226,0.2)",
+              borderRadius: "12px", padding: "1rem", textAlign: "center"
+            }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>🎁</div>
+              <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>
+                {botStatus.codeDrops.lastDropAt
+                  ? new Date(botStatus.codeDrops.lastDropAt).toLocaleTimeString("cs-CZ")
+                  : "Žádný"}
+              </div>
+              <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.25rem" }}>Poslední code drop</div>
+            </div>
+
+            {/* Webhooks */}
+            <div style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--glass-border)",
+              borderRadius: "12px", padding: "1rem", textAlign: "center"
+            }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>🔗</div>
+              <div style={{ fontWeight: 700 }}>
+                {Array.isArray(botStatus.webhookSubscriptions) ? botStatus.webhookSubscriptions.length : "?"}
+              </div>
+              <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.25rem" }}>Webhook subskripcí</div>
+            </div>
+          </div>
+        ) : (
+          <p style={{ color: "#ff4444" }}>Nepodařilo se načíst stav bota</p>
+        )}
+
+        {/* Point system info */}
+        {botStatus && (
+          <div style={{ marginTop: "1.5rem", background: "rgba(0,0,0,0.2)", borderRadius: "10px", padding: "1rem" }}>
+            <h4 style={{ marginBottom: "0.75rem", fontSize: "0.9rem", color: "#aaa" }}>💰 Bodový systém</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.5rem", fontSize: "0.85rem" }}>
+              <div>📺 Aktivita v chatu: <strong>{botStatus.pointSystem.chatActivityPoints} bodů / 5 min</strong></div>
+              <div>⭐ Sub bonus: <strong>{botStatus.pointSystem.subChatActivityPoints} bodů / 5 min</strong></div>
+              <div>🎉 Nový sub: <strong>{botStatus.pointSystem.newSubPoints} bodů</strong></div>
+              <div>🎁 Gifted sub: <strong>{botStatus.pointSystem.giftedSubPoints} bodů</strong></div>
+              <div>⚡ Kicks: <strong>{botStatus.pointSystem.kicksRatio}</strong></div>
+              <div>🎁 Code drop: <strong>každých {botStatus.pointSystem.tickIntervalMinutes * 3} min</strong></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ACTION BUTTONS */}
+      <div className="glass-panel" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
+        <h3 style={{ marginBottom: "1rem" }}>⚡ Akce</h3>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+          <button
+            className="admin-btn admin-btn-primary"
+            onClick={handleTestMessage}
+            disabled={actionLoading === "test"}
+            style={{ padding: "0.8rem 1.5rem" }}
+          >
+            {actionLoading === "test" ? "⏳ Odesílání..." : "🤖 Test Bot Message"}
+          </button>
+
+          <button
+            className="admin-btn admin-btn-secondary"
+            onClick={handleSubscribeWebhooks}
+            disabled={actionLoading === "subscribe"}
+            style={{ padding: "0.8rem 1.5rem" }}
+          >
+            {actionLoading === "subscribe" ? "⏳ Registrace..." : "🔗 Subscribe Webhooks"}
+          </button>
+
+          <button
+            className="admin-btn admin-btn-primary"
+            onClick={handleDropCode}
+            disabled={actionLoading === "code"}
+            style={{ padding: "0.8rem 1.5rem" }}
+          >
+            {actionLoading === "code" ? "⏳ Generování..." : "🎁 Manual Code Drop"}
+          </button>
+        </div>
+      </div>
+
+      {/* BOT EVENTS LOG */}
+      <div className="glass-panel" style={{ padding: "1.5rem" }}>
+        <h3 style={{ marginBottom: "1rem" }}>📋 Poslední bot eventy</h3>
+        {botEvents.length === 0 ? (
+          <p style={{ color: "#888" }}>Žádné eventy zatím</p>
+        ) : (
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <table className="admin-table" style={{ fontSize: "0.85rem" }}>
+              <thead>
+                <tr>
+                  <th>Čas</th>
+                  <th>Typ</th>
+                  <th>Uživatel</th>
+                  <th>Body</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {botEvents.map((ev: any, i: number) => (
+                  <tr key={i} style={{ opacity: ev.event_type === 'chat.activity_points' ? 0.6 : 1 }}>
+                    <td style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>
+                      {ev.created_at ? new Date(ev.created_at.replace(" ", "T") + (ev.created_at.includes("T") ? "" : "Z")).toLocaleString("cs-CZ") : "—"}
+                    </td>
+                    <td>
+                      <span style={{
+                        padding: "0.15rem 0.5rem",
+                        borderRadius: "50px",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        background: ev.event_type.includes('subscription') ? "rgba(76,175,80,0.15)" :
+                                   ev.event_type.includes('kicks') ? "rgba(138,43,226,0.15)" :
+                                   ev.event_type.includes('code') ? "rgba(255,215,0,0.15)" :
+                                   "rgba(255,255,255,0.05)",
+                        color: ev.event_type.includes('subscription') ? "#4CAF50" :
+                               ev.event_type.includes('kicks') ? "#b366ff" :
+                               ev.event_type.includes('code') ? "#FFD700" :
+                               "#aaa",
+                      }}>
+                        {ev.event_type}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{ev.username}</td>
+                    <td>{ev.points_awarded > 0 ? `+${ev.points_awarded}` : "—"}</td>
+                    <td style={{ color: "#888", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {ev.details || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -1069,48 +1329,7 @@ export default function AdminPage() {
 
         {/* BOT TAB */}
         {activeTab === "bot" && (
-          <div className="admin-panel">
-            <div className="admin-section-header">
-              <h2><MessageSquare size={20} /> Bot & Kódy</h2>
-            </div>
-            
-            <div className="glass-panel" style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div>
-                <h3 style={{ marginBottom: "0.5rem" }}>Manual Code Drop</h3>
-                <p style={{ color: "#aaa", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-                  Tímto tlačítkem okamžitě vygeneruješ nový 5místný kód, odešleš ho do Kick chatu a deaktivuješ všechny předchozí kódy.
-                </p>
-                <button 
-                  className="admin-btn admin-btn-primary" 
-                  onClick={async () => {
-                    if (!confirm("Opravdu chceš odeslat nový kód do chatu?")) return;
-                    try {
-                      const res = await fetch("/api/admin/bot/drop-code", { method: "POST" });
-                      if (res.ok) {
-                        const data = await res.json();
-                        alert(`Kód [ ${data.code} ] byl úspěšně odeslán do chatu!`);
-                      } else {
-                        const data = await res.json();
-                        alert("Chyba: " + (data.error || "Nepodařilo se odeslat kód"));
-                      }
-                    } catch (e) {
-                      alert("Chyba připojení");
-                    }
-                  }}
-                  style={{ padding: "1rem 2rem", fontSize: "1rem" }}
-                >
-                  <Ticket size={18} /> Odeslat náhodný kód do chatu
-                </button>
-              </div>
-
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1.5rem" }}>
-                <h3 style={{ marginBottom: "0.5rem" }}>Ostatní nastavení</h3>
-                <p style={{ color: "#aaa", fontSize: "0.9rem" }}>
-                  V budoucnu zde přibudou další ovládací prvky pro bota.
-                </p>
-              </div>
-            </div>
-          </div>
+          <BotTab />
         )}
 
         {/* USER DETAIL MODAL */}

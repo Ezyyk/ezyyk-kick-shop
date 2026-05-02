@@ -9,12 +9,13 @@ import {
   getTopUsers,
   getUserByName,
 } from '@/lib/db';
+import { formatPoints } from '@/lib/format';
 
 // ========== POINT VALUES ==========
 const POINTS = {
   NEW_SUB: 500,
   RENEWAL_SUB: 500,
-  GIFTED_SUB: 500,
+  GIFTED_SUB: 500,   // per gifted sub
 };
 
 // ========== BOT COMMAND HANDLERS ==========
@@ -22,15 +23,47 @@ const POINTS = {
 async function handlePointsCommand(username: string, chatId?: string | number) {
   const user = await getUserByName(username);
   const points = user?.points || 0;
-  await sendChatMessage(`@${username} máš ${points} bodů 💰`, undefined, chatId);
+  await sendChatMessage(
+    `💰 @${username} máš ${formatPoints(points)} bodů! Sbírej body sledováním streamu a aktivitou v chatu → ezyyk.com`,
+    undefined, chatId
+  );
 }
 
 async function handleShopCommand(chatId?: string | number) {
-  await sendChatMessage(`🛒 Shop najdeš zde: https://ezyyk.com`, undefined, chatId);
+  await sendChatMessage(
+    `🛒 Obchod s odměnami najdeš na: ezyyk.com/shop | Sbírej body a vyměň je za skvělé odměny! 🎁`,
+    undefined, chatId
+  );
 }
 
 async function handleLeaderboardCommand(chatId?: string | number) {
-  await sendChatMessage('📊 Kompletní žebříček bodů najdeš na: https://ezyyk.com/leaderboard', undefined, chatId);
+  try {
+    const topUsers = await getTopUsers(5);
+    if (topUsers.length === 0) {
+      await sendChatMessage('📊 Žebříček je zatím prázdný!', undefined, chatId);
+      return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+    const lines = topUsers.map((u: any, i: number) => 
+      `${medals[i]} ${u.name}: ${formatPoints(u.points)} bodů`
+    ).join(' | ');
+
+    await sendChatMessage(
+      `📊 TOP 5: ${lines} → Kompletní žebříček: ezyyk.com/leaderboard`,
+      undefined, chatId
+    );
+  } catch (error) {
+    console.error('[BOT] Error in leaderboard command:', error);
+    await sendChatMessage('📊 Žebříček najdeš na: ezyyk.com/leaderboard', undefined, chatId);
+  }
+}
+
+async function handleHelpCommand(chatId?: string | number) {
+  await sendChatMessage(
+    `⚡ EzyykBot příkazy: !points (tvoje body) | !shop (obchod) | !leaderboard (top 5) | !help (tento seznam) → ezyyk.com`,
+    undefined, chatId
+  );
 }
 
 // ========== EVENT HANDLERS ==========
@@ -73,8 +106,12 @@ async function handleChatMessage(payload: Record<string, unknown>) {
     await handleShopCommand(chatroomId);
     return;
   }
-  if (trimmedContent === '!leaderboard' || trimmedContent === '!top') {
+  if (trimmedContent === '!leaderboard' || trimmedContent === '!top' || trimmedContent === '!zebricek') {
     await handleLeaderboardCommand(chatroomId);
+    return;
+  }
+  if (trimmedContent === '!help' || trimmedContent === '!pomoc' || trimmedContent === '!commands') {
+    await handleHelpCommand(chatroomId);
     return;
   }
 
@@ -94,7 +131,10 @@ async function handleNewSubscription(payload: Record<string, unknown>) {
   await logBotEvent('subscription.new', username, subscriber.user_id as number, POINTS.NEW_SUB);
 
   const chatroomId = payload.chatroom_id as string | number | undefined;
-  await sendChatMessage(`🎉 @${username} právě suboval! +${POINTS.NEW_SUB} bodů! 💚`, undefined, chatroomId);
+  await sendChatMessage(
+    `🎉 @${username} právě suboval a získal +${formatPoints(POINTS.NEW_SUB)} bodů! Děkujeme za podporu! 💚`,
+    undefined, chatroomId
+  );
   console.log(`[BOT] New sub: ${username} +${POINTS.NEW_SUB} points`);
 }
 
@@ -112,7 +152,10 @@ async function handleSubscriptionRenewal(payload: Record<string, unknown>) {
   await logBotEvent('subscription.renewal', username, subscriber.user_id as number, POINTS.RENEWAL_SUB, `${duration} months`);
 
   const chatroomId = payload.chatroom_id as string | number | undefined;
-  await sendChatMessage(`🔄 @${username} obnovil sub (${duration} měsíců)! +${POINTS.RENEWAL_SUB} bodů! 💚`, undefined, chatroomId);
+  await sendChatMessage(
+    `🔄 @${username} obnovil sub (${duration}. měsíc) a získal +${formatPoints(POINTS.RENEWAL_SUB)} bodů! 💚`,
+    undefined, chatroomId
+  );
   console.log(`[BOT] Sub renewal: ${username} (${duration} months) +${POINTS.RENEWAL_SUB} points`);
 }
 
@@ -142,7 +185,10 @@ async function handleSubscriptionGifts(payload: Record<string, unknown>) {
   }
 
   const chatroomId = payload.chatroom_id as string | number | undefined;
-  await sendChatMessage(`🎁 @${gifterName} daroval ${giftCount}x sub! +${totalPoints} bodů! 🎉`, undefined, chatroomId);
+  await sendChatMessage(
+    `🎁 @${gifterName} daroval ${giftCount}x sub a získal +${formatPoints(totalPoints)} bodů! Absolutní legenda! 🎉`,
+    undefined, chatroomId
+  );
   console.log(`[BOT] Gift subs: ${gifterName} gifted ${giftCount} subs +${totalPoints} points`);
 }
 
@@ -154,9 +200,9 @@ async function handleKicksGifted(payload: Record<string, unknown>) {
   const gift = payload.gift as Record<string, unknown> | undefined;
   const amount = (gift?.amount as number) || 0;
   const giftName = (gift?.name as string) || '';
-  if (!username) return;
+  if (!username || amount <= 0) return;
 
-  // Award 1 point per 1 Kick (as requested: 100 kicks = 100 points)
+  // 100 kicks = 100 points (1:1 ratio)
   const pointsAwarded = amount;
 
   await findOrCreateUserByName(username);
@@ -164,7 +210,10 @@ async function handleKicksGifted(payload: Record<string, unknown>) {
   await logBotEvent('kicks.gifted', username, sender.user_id as number, pointsAwarded, `${amount} kicks - ${giftName}`);
 
   const chatroomId = payload.chatroom_id as string | number | undefined;
-  await sendChatMessage(`⚡ @${username} daroval Kicks (${giftName}, ${amount}x)! +${pointsAwarded} bodů! 💜`, undefined, chatroomId);
+  await sendChatMessage(
+    `⚡ @${username} poslal ${amount} Kicks a získal +${formatPoints(pointsAwarded)} bodů! 💜`,
+    undefined, chatroomId
+  );
   console.log(`[BOT] Kicks gifted: ${username} sent ${amount} kicks (${giftName}) +${pointsAwarded} points`);
 }
 
@@ -190,41 +239,27 @@ export async function POST(request: NextRequest) {
 
     const payload = JSON.parse(rawBody);
 
+    // Save chatroom ID from any event that has it
+    if (payload.chatroom_id) {
+      const { setSetting } = await import('@/lib/db');
+      await setSetting('last_chatroom_id', String(payload.chatroom_id));
+    }
+
     switch (eventType) {
       case 'chat.message.sent':
-        console.log(`[DEBUG] Full chat payload: ${JSON.stringify(payload)}`);
-        if (payload.chatroom_id) {
-          const { setSetting } = await import('@/lib/db');
-          await setSetting('last_chatroom_id', String(payload.chatroom_id));
-        }
+        console.log(`[DEBUG] Chat: ${JSON.stringify(payload).substring(0, 200)}`);
         await handleChatMessage(payload);
         break;
       case 'channel.subscription.new':
-        if (payload.chatroom_id) {
-          const { setSetting } = await import('@/lib/db');
-          await setSetting('last_chatroom_id', String(payload.chatroom_id));
-        }
         await handleNewSubscription(payload);
         break;
       case 'channel.subscription.renewal':
-        if (payload.chatroom_id) {
-          const { setSetting } = await import('@/lib/db');
-          await setSetting('last_chatroom_id', String(payload.chatroom_id));
-        }
         await handleSubscriptionRenewal(payload);
         break;
       case 'channel.subscription.gifts':
-        if (payload.chatroom_id) {
-          const { setSetting } = await import('@/lib/db');
-          await setSetting('last_chatroom_id', String(payload.chatroom_id));
-        }
         await handleSubscriptionGifts(payload);
         break;
       case 'kicks.gifted':
-        if (payload.chatroom_id) {
-          const { setSetting } = await import('@/lib/db');
-          await setSetting('last_chatroom_id', String(payload.chatroom_id));
-        }
         await handleKicksGifted(payload);
         break;
       case 'livestream.status.updated': {
