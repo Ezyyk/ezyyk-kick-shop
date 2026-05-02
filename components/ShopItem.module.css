@@ -15,9 +15,13 @@
 }
 
 .item:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
-  transform: translateY(-5px);
+  border-color: rgba(138, 43, 226, 0.5);
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(138, 43, 226, 0.5),
+    0 0 50px rgba(138, 43, 226, 0.2),
+    inset 0 0 15px rgba(138, 43, 226, 0.1);
+  transform: translateY(-8px);
 }
 
 .header {
