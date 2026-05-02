@@ -329,3 +329,47 @@ export async function getEventSubscriptions(): Promise<unknown[]> {
     return [];
   }
 }
+
+/**
+ * Check real-time live status from the Kick Public API
+ */
+export async function checkLiveStatus(): Promise<boolean | null> {
+  try {
+    const token = await getAccessToken('broadcaster');
+    if (!token) return null;
+
+    const buid = parseInt(process.env.KICK_BROADCASTER_USER_ID || '0');
+    if (!buid) return null;
+
+    let response = await fetch(`https://api.kick.com/public/v1/channels?broadcaster_user_id=${buid}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+    });
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken('broadcaster');
+      if (newToken) {
+        response = await fetch(`https://api.kick.com/public/v1/channels?broadcaster_user_id=${buid}`, {
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Accept': 'application/json',
+          },
+        });
+      }
+    }
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (data && data.data && data.data.length > 0) {
+      const channel = data.data[0];
+      return channel.stream?.is_live === true;
+    }
+    return false;
+  } catch (error) {
+    console.error('[KICK-API] Error checking live status:', error);
+    return null;
+  }
+}

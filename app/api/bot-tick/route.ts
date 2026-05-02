@@ -10,7 +10,7 @@ import {
   getSetting,
   setSetting,
 } from '@/lib/db';
-import { sendChatMessage } from '@/lib/kick-api';
+import { sendChatMessage, checkLiveStatus } from '@/lib/kick-api';
 
 function generateRandomCode(length: number = 5) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars
@@ -41,6 +41,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Check actual stream status from Kick API to fix desyncs
+    const actualLiveStatus = await checkLiveStatus();
+    if (actualLiveStatus !== null) {
+      await setSetting('is_live', actualLiveStatus ? 'true' : 'false');
+    }
+
     const isLive = await getSetting('is_live', 'false') === 'true';
 
     // ===== 1. AWARD CHAT ACTIVITY POINTS (only when live) =====

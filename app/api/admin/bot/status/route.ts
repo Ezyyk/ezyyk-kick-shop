@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getSetting } from '@/lib/db';
-import { getEventSubscriptions } from '@/lib/kick-api';
+import { getSetting, setSetting } from '@/lib/db';
+import { getEventSubscriptions, checkLiveStatus } from '@/lib/kick-api';
 
 import crypto from "crypto";
 
@@ -19,6 +19,12 @@ export async function GET() {
   }
 
   try {
+    // Check actual stream status from Kick API to ensure admin UI is up-to-date
+    const actualLiveStatus = await checkLiveStatus();
+    if (actualLiveStatus !== null) {
+      await setSetting('is_live', actualLiveStatus ? 'true' : 'false');
+    }
+
     const [isLive, lastCodeDrop, lastChatroomId, webhookSubs] = await Promise.all([
       getSetting('is_live', 'false'),
       getSetting('last_code_drop_at', '0'),
