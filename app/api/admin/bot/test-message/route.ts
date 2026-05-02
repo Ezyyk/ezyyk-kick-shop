@@ -3,11 +3,18 @@ import { cookies } from 'next/headers';
 import { sendChatMessage } from '@/lib/kick-api';
 import { getSetting } from '@/lib/db';
 
-export async function POST() {
+import crypto from "crypto";
+
+async function isAdmin() {
   const cookieStore = await cookies();
-  const adminSession = cookieStore.get('admin_session');
-  
-  if (!adminSession || adminSession.value !== process.env.ADMIN_PASSWORD) {
+  const token = cookieStore.get("admin_token")?.value;
+  const adminPassword = process.env.ADMIN_PASSWORD || "";
+  const expectedToken = crypto.createHash("sha256").update(adminPassword).digest("hex");
+  return token && token === expectedToken;
+}
+
+export async function POST() {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,4 +1,68 @@
 import crypto from 'crypto';
+import { getSetting, setSetting } from './db';
+
+async function getStoredTokens(type: 'bot' | 'broadcaster') {
+  const settingKey = type === 'bot' ? 'kick_tokens_bot' : 'kick_tokens_broadcaster';
+  try {
+    const data = await getSetting(settingKey);
+    if (data) {
+      return JSON.parse(data);
+    }
+  } catch (e) {
+    console.error(`[KICK-API] Error reading ${type} tokens from DB:`, e);
+  }
+  return null;
+}
+
+async function saveTokens(type: 'bot' | 'broadcaster', tokens: any) {
+  const settingKey = type === 'bot' ? 'kick_tokens_bot' : 'kick_tokens_broadcaster';
+  try {
+    await setSetting(settingKey, JSON.stringify(tokens));
+    console.log(`[KICK-API] ${type} tokens saved to DB successfully.`);
+  } catch (e) {
+    console.error(`[KICK-API] Error saving ${type} tokens to DB:`, e);
+  }
+}
+
+async function refreshAccessToken(type: 'bot' | 'broadcaster'): Promise<string | null> {
+  const tokens = await getStoredTokens(type);
+  if (!tokens || !tokens.refresh_token) {
+    console.error(`[KICK-API] No refresh token available for ${type}`);
+    return null;
+  }
+
+  const clientId = process.env.KICK_CLIENT_ID;
+  const clientSecret = process.env.KICK_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) return null;
+
+  console.log(`[KICK-API] Refreshing ${type} access token...`);
+
+  try {
+    const response = await fetch('https://id.kick.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: tokens.refresh_token,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`[KICK-API] Failed to refresh ${type} token:`, await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    await saveTokens(type, data);
+    return data.access_token;
+  } catch (error) {
+    console.error(`[KICK-API] Error refreshing ${type} token:`, error);
+    return null;
+  }
+}
 
 // Kick public key for webhook signature verification
 const KICK_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
@@ -72,26 +136,15 @@ async function getAppAccessToken(): Promise<string | null> {
   }
 }
 
-/**
- * Get a valid access token - tries bot token first, then broadcaster token, falls back to app token
- */
-async function getAccessToken(): Promise<string | null> {
-  // Try the dedicated bot token first
-  const botToken = process.env.KICK_BOT_TOKEN;
-  if (botToken) {
-    console.log('[KICK-API] Using BOT token');
-    return botToken;
+async function getAccessToken(type: 'bot' | 'broadcaster'): Promise<string | null> {
+  const tokens = await getStoredTokens(type);
+  if (tokens && tokens.access_token) {
+    return tokens.access_token;
   }
 
-  // Try the broadcaster's stored token next
-  const broadcasterToken = process.env.KICK_BROADCASTER_TOKEN;
-  if (broadcasterToken) {
-    console.log('[KICK-API] Using BROADCASTER token');
-    return broadcasterToken;
-  }
+  const envToken = type === 'bot' ? process.env.KICK_BOT_TOKEN : process.env.KICK_BROADCASTER_TOKEN;
+  if (envToken) return envToken;
   
-  console.log('[KICK-API] Using APP token');
-  // Fall back to app access token
   return await getAppAccessToken();
 }
 
@@ -100,9 +153,9 @@ async function getAccessToken(): Promise<string | null> {
  */
 export async function sendChatMessage(content: string, broadcasterUserId?: number, chatId?: string | number): Promise<boolean> {
   try {
-    const token = await getAccessToken();
+    const token = await getAccessToken('bot');
     if (!token) {
-      console.error('[KICK-API] No access token available to send chat message');
+      console.error('[KICK-API] No bot access token available to send chat message');
       return false;
     }
 
@@ -122,7 +175,7 @@ export async function sendChatMessage(content: string, broadcasterUserId?: numbe
     console.log(`[KICK-API] Using token: ${token.substring(0, 5)}...`);
     console.log(`[KICK-API] Sending chat payload:`, payload);
 
-    const response = await fetch('https://api.kick.com/public/v1/chat', {
+    let response = await fetch('https://api.kick.com/public/v1/chat', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -131,6 +184,23 @@ export async function sendChatMessage(content: string, broadcasterUserId?: numbe
       },
       body: JSON.stringify(payload),
     });
+
+    // Handle token expiration
+    if (response.status === 401) {
+      console.log('[KICK-API] Bot token expired (401), attempting refresh...');
+      const newToken = await refreshAccessToken('bot');
+      if (newToken) {
+        response = await fetch('https://api.kick.com/public/v1/chat', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -152,9 +222,9 @@ export async function sendChatMessage(content: string, broadcasterUserId?: numbe
  */
 export async function subscribeToEvents(webhookUrl: string): Promise<boolean> {
   try {
-    const token = await getAccessToken();
+    const token = await getAccessToken('broadcaster');
     if (!token) {
-      console.error('[KICK-API] No access token available');
+      console.error('[KICK-API] No broadcaster access token available for subscriptions');
       return false;
     }
 
@@ -173,7 +243,7 @@ export async function subscribeToEvents(webhookUrl: string): Promise<boolean> {
       { name: 'livestream.status.updated', version: 1 },
     ];
 
-    const response = await fetch('https://api.kick.com/public/v1/events/subscriptions', {
+    let response = await fetch('https://api.kick.com/public/v1/events/subscriptions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -186,6 +256,27 @@ export async function subscribeToEvents(webhookUrl: string): Promise<boolean> {
         method: 'webhook',
       }),
     });
+
+    // Handle token expiration
+    if (response.status === 401) {
+      console.log('[KICK-API] Broadcaster token expired (401), attempting refresh...');
+      const newToken = await refreshAccessToken('broadcaster');
+      if (newToken) {
+        response = await fetch('https://api.kick.com/public/v1/events/subscriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+          },
+          body: JSON.stringify({
+            broadcaster_user_id: buid,
+            events: events,
+            method: 'webhook',
+          }),
+        });
+      }
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -207,15 +298,27 @@ export async function subscribeToEvents(webhookUrl: string): Promise<boolean> {
  */
 export async function getEventSubscriptions(): Promise<unknown[]> {
   try {
-    const token = await getAccessToken();
+    const token = await getAccessToken('broadcaster');
     if (!token) return [];
 
-    const response = await fetch('https://api.kick.com/public/v1/events/subscriptions', {
+    let response = await fetch('https://api.kick.com/public/v1/events/subscriptions', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': '*/*',
       },
     });
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken('broadcaster');
+      if (newToken) {
+        response = await fetch('https://api.kick.com/public/v1/events/subscriptions', {
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Accept': '*/*',
+          },
+        });
+      }
+    }
 
     if (!response.ok) return [];
 

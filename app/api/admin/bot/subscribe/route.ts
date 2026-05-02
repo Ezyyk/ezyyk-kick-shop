@@ -2,11 +2,18 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { subscribeToEvents } from '@/lib/kick-api';
 
-export async function POST(request: Request) {
+import crypto from "crypto";
+
+async function isAdmin() {
   const cookieStore = await cookies();
-  const adminSession = cookieStore.get('admin_session');
-  
-  if (!adminSession || adminSession.value !== process.env.ADMIN_PASSWORD) {
+  const token = cookieStore.get("admin_token")?.value;
+  const adminPassword = process.env.ADMIN_PASSWORD || "";
+  const expectedToken = crypto.createHash("sha256").update(adminPassword).digest("hex");
+  return token && token === expectedToken;
+}
+
+export async function POST(request: Request) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
