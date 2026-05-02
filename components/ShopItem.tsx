@@ -82,7 +82,7 @@ export default function ShopItem({
           <div className={styles.priceSection}>
             <div className={styles.costBox}>
               <div className={styles.cost}>
-                <GemIcon size={18} color="#00e5ff" />
+                <GemIcon size={18} />
                 <span>{formatPoints(cost)}</span>
               </div>
               {stock !== -1 && (

@@ -595,7 +595,7 @@ export default function AdminPage() {
               <h3>Vlastní itemy</h3>
               <button className="admin-btn admin-btn-primary" onClick={() => {
                 if (!showForm) {
-                  setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0 });
+                  setNewItem({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0, requiresMessage: false });
                   setIsEditingItem(false);
                 }
                 setShowForm(!showForm);
