@@ -41,32 +41,36 @@ export async function POST(request: Request) {
   }
 
   try {
-    // ===== 1. AWARD CHAT ACTIVITY POINTS =====
-    const activeChatters = await getActiveChattersDueForPoints();
+    const isLive = await getSetting('is_live', 'false') === 'true';
+
+    // ===== 1. AWARD CHAT ACTIVITY POINTS (only when live) =====
     let totalAwarded = 0;
+    
+    if (isLive) {
+      const activeChatters = await getActiveChattersDueForPoints();
 
-    for (const chatter of activeChatters) {
-      const points = chatter.is_sub ? CHAT_POINTS_SUB : CHAT_POINTS_NORMAL;
-      
-      await addPointsByName(chatter.username, points);
-      await markChatPointsAwarded(chatter.username);
-      await logBotEvent(
-        'chat.activity_points',
-        chatter.username,
-        chatter.kick_user_id,
-        points,
-        chatter.is_sub ? 'sub bonus (10 pts)' : 'regular (5 pts)'
-      );
-      
-      totalAwarded++;
-    }
+      for (const chatter of activeChatters) {
+        const points = chatter.is_sub ? CHAT_POINTS_SUB : CHAT_POINTS_NORMAL;
+        
+        await addPointsByName(chatter.username, points);
+        await markChatPointsAwarded(chatter.username);
+        await logBotEvent(
+          'chat.activity_points',
+          chatter.username,
+          chatter.kick_user_id,
+          points,
+          chatter.is_sub ? 'sub bonus (10 pts)' : 'regular (5 pts)'
+        );
+        
+        totalAwarded++;
+      }
 
-    if (totalAwarded > 0) {
-      console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
+      if (totalAwarded > 0) {
+        console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
+      }
     }
 
     // ===== 2. CODE DROP LOGIC (every 15 minutes when live) =====
-    const isLive = await getSetting('is_live', 'false') === 'true';
     let codeDropped = false;
 
     if (isLive) {
