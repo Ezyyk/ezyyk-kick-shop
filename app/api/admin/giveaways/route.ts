@@ -66,7 +66,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const { id, title, description, ticketCost, endsAt, imageUrl, imageScale } = await req.json();
+  const { id, title, description, ticketCost, endsAt, imageUrl, imageScale, is_sent } = await req.json();
   
   if (!id || !title || !ticketCost || !endsAt) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -74,8 +74,8 @@ export async function PUT(req: Request) {
   
   const db = await getDb();
   await db.run(
-    'UPDATE giveaways SET title = ?, description = ?, image_url = ?, ticket_cost = ?, ends_at = ?, image_scale = ? WHERE id = ?',
-    title, description || "", imageUrl || "", ticketCost, endsAt, imageScale !== undefined ? imageScale : 1.0, id
+    'UPDATE giveaways SET title = ?, description = ?, image_url = ?, ticket_cost = ?, ends_at = ?, image_scale = ?, is_sent = ? WHERE id = ?',
+    title, description || "", imageUrl || "", ticketCost, endsAt, imageScale !== undefined ? imageScale : 1.0, is_sent ? 1 : 0, id
   );
   
   return NextResponse.json({ success: true });

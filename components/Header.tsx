@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession, signOut, signIn } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { Gem, LogOut, LogIn, Home, ShoppingBag, Trophy, Gift, Ticket } from "lucide-react";
+import { Gem, LogOut, LogIn, Home, ShoppingBag, Trophy, Gift, Ticket, Package } from "lucide-react";
 import Link from "next/link";
 import Button from "./Button";
 
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/shop", label: "Shop", icon: ShoppingBag },
   { href: "/giveaways", label: "Giveaways", icon: Gift },
   { href: "/leaderboard", label: "Žebříček", icon: Trophy },
+  { href: "/odeslane-odmeny", label: "Odeslané odměny", icon: Package },
 ];
 
 export default function Header() {

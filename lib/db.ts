@@ -56,7 +56,8 @@ export async function getDb() {
       points INTEGER DEFAULT 0,
       is_sub BOOLEAN DEFAULT 0,
       last_ping DATETIME,
-      trade_url TEXT
+      trade_url TEXT,
+      avatar_url TEXT
     );
   `);
 
@@ -168,6 +169,14 @@ export async function getDb() {
 
   try {
     await wrapper.exec('ALTER TABLE giveaways ADD COLUMN image_scale REAL DEFAULT 1.0');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE giveaways ADD COLUMN is_sent BOOLEAN DEFAULT 0');
+  } catch (e) {}
+
+  try {
+    await wrapper.exec('ALTER TABLE users ADD COLUMN avatar_url TEXT');
   } catch (e) {}
 
   return wrapper;
@@ -449,8 +458,54 @@ export async function checkAndDrawGiveaways() {
       drawnCount++;
     }
   }
-  
   return drawnCount;
+}
+
+export async function updateGiveawayStatus(id: string, isSent: boolean) {
+  const db = await getDb();
+  await db.run('UPDATE giveaways SET is_sent = ? WHERE id = ?', isSent ? 1 : 0, id);
+}
+
+export async function getSentRewards() {
+  const db = await getDb();
+  
+  // Get sent shop purchases
+  const shopPurchases = await db.all(`
+    SELECT 
+      ph.id, 
+      ph.user_name, 
+      ph.item_title as title, 
+      ph.purchased_at as date,
+      'shop' as type,
+      si.image_url,
+      u.avatar_url
+    FROM purchase_history ph
+    LEFT JOIN shop_items si ON ph.item_id = si.id
+    LEFT JOIN users u ON ph.user_id = u.id
+    WHERE ph.is_sent = 1
+    ORDER BY ph.purchased_at DESC
+  `);
+
+  // Get sent giveaway wins
+  const giveawayWins = await db.all(`
+    SELECT 
+      g.id, 
+      g.winner_name as user_name, 
+      g.title, 
+      g.ends_at as date,
+      'giveaway' as type,
+      g.image_url,
+      u.avatar_url
+    FROM giveaways g
+    LEFT JOIN users u ON g.winner_name = u.name
+    WHERE g.status = 'ended' AND g.winner_name IS NOT NULL AND g.is_sent = 1
+    ORDER BY g.ends_at DESC
+  `);
+
+  // Combine and sort by date
+  return [...shopPurchases, ...giveawayWins].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 }
 export async function getUserGiveawayHistory(userName: string) {
   const db = await getDb();

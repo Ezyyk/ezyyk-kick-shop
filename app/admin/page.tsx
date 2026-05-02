@@ -48,6 +48,7 @@ interface AdminGiveaway {
   status: string;
   image_scale: number;
   total_tickets: number;
+  is_sent: number;
   ticket_holders: { user_name: string; count: number }[];
 }
 
@@ -247,6 +248,29 @@ export default function AdminPage() {
       }
     } catch (e) {
       console.error("Chyba při změně stavu", e);
+    }
+  };
+
+  const handleToggleGiveawaySent = async (gw: AdminGiveaway) => {
+    try {
+      const newStatus = gw.is_sent === 1 ? 0 : 1;
+      const res = await fetch("/api/admin/giveaways", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          ...gw, 
+          id: gw.id,
+          title: gw.title,
+          ticketCost: gw.ticket_cost,
+          endsAt: gw.ends_at,
+          is_sent: newStatus === 1 
+        }),
+      });
+      if (res.ok) {
+        setGiveaways(giveaways.map(g => g.id === gw.id ? { ...g, is_sent: newStatus } : g));
+      }
+    } catch (e) {
+      console.error("Chyba při změně stavu giveaway", e);
     }
   };
 
@@ -912,6 +936,16 @@ export default function AdminPage() {
                       </div>
 
                       <div className="shop-col-actions" style={{ gap: "0.5rem" }}>
+                        {gw.status === "ended" && gw.winner_name && (
+                          <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.8rem", cursor: "pointer", background: gw.is_sent ? "rgba(76, 175, 80, 0.2)" : "rgba(255,255,255,0.05)", padding: "0.3rem 0.6rem", borderRadius: "4px", border: "1px solid", borderColor: gw.is_sent ? "#4CAF50" : "var(--glass-border)" }}>
+                            <input 
+                              type="checkbox" 
+                              checked={gw.is_sent === 1} 
+                              onChange={() => handleToggleGiveawaySent(gw)}
+                            />
+                            {gw.is_sent ? "Odesláno" : "Odeslat"}
+                          </label>
+                        )}
                         <button className="admin-btn-small" style={{ padding: "0.25rem 0.5rem" }} onClick={() => {
                           const dateStr = gw.ends_at.includes("T") && !gw.ends_at.endsWith("Z") ? gw.ends_at + "Z" : gw.ends_at;
                           const date = new Date(dateStr);

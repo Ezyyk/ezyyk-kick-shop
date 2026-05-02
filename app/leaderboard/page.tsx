@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Trophy, Gem, ChevronLeft, ChevronRight, Crown, Medal, Award } from "lucide-react";
+import Link from "next/link";
 
 interface LeaderboardUser {
   name: string;
@@ -74,7 +75,7 @@ export default function LeaderboardPage() {
                 {users.map((user, index) => {
                   const rank = (page - 1) * 20 + index + 1;
                   return (
-                    <div key={user.name + rank} className={`lb-row ${getRankClass(rank)}`}>
+                    <Link href={`/profile/${user.name}`} key={user.name + rank} className={`lb-row ${getRankClass(rank)}`} style={{ textDecoration: "none", cursor: "pointer" }}>
                       <div className="lb-rank">
                         {getRankIcon(rank)}
                       </div>
@@ -90,7 +91,7 @@ export default function LeaderboardPage() {
                         <Gem size={16} />
                         <span>{user.points.toLocaleString("cs-CZ")}</span>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </>

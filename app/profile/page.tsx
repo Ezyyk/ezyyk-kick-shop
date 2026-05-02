@@ -156,6 +156,7 @@ export default function ProfilePage() {
                 <div key={p.id} style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  alignItems: "center",
                   padding: "1rem",
                   background: "rgba(0,0,0,0.3)",
                   borderRadius: "var(--radius-sm)",
@@ -163,9 +164,16 @@ export default function ProfilePage() {
                 }}>
                   <div>
                     <strong style={{ display: "block", color: "var(--text-primary)" }}>{p.item_title}</strong>
-                    <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                      {new Date(p.purchased_at.replace(" ", "T") + "Z").toLocaleString("cs-CZ")}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.2rem" }}>
+                      <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                        {new Date(p.purchased_at.replace(" ", "T") + "Z").toLocaleString("cs-CZ")}
+                      </span>
+                      {p.is_sent ? (
+                        <span style={{ fontSize: "0.7rem", color: "#4CAF50", background: "rgba(76, 175, 80, 0.1)", padding: "0.1rem 0.5rem", borderRadius: "4px", border: "1px solid rgba(76, 175, 80, 0.2)", fontWeight: "600" }}>DORUČENO</span>
+                      ) : (
+                        <span style={{ fontSize: "0.7rem", color: "var(--accent-secondary)", background: "rgba(255,255,255,0.05)", padding: "0.1rem 0.5rem", borderRadius: "4px", border: "1px solid var(--glass-border)", fontWeight: "600" }}>ČEKÁ</span>
+                      )}
+                    </div>
                   </div>
                   <div style={{ color: "var(--accent-primary)", fontWeight: "bold" }}>
                     -{p.cost.toLocaleString()} bodů
@@ -191,26 +199,34 @@ export default function ProfilePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     padding: "1rem",
-                    background: "rgba(0,0,0,0.3)",
+                    background: isWinner ? "rgba(255, 215, 0, 0.05)" : "rgba(0,0,0,0.3)",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--glass-border)",
+                    border: "1px solid",
+                    borderColor: isWinner ? "rgba(255, 215, 0, 0.4)" : "var(--glass-border)",
+                    boxShadow: isWinner ? "0 0 15px rgba(255, 215, 0, 0.05)" : "none",
                     position: "relative",
-                    overflow: "hidden"
+                    overflow: "hidden",
+                    transition: "all 0.3s ease"
                   }}>
-                    {isWinner && (
-                      <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: "4px", background: "#FFD700" }}></div>
-                    )}
                     <div>
-                      <strong style={{ display: "block", color: isWinner ? "#FFD700" : "var(--text-primary)" }}>
-                        {g.title} {isWinner && "🏆 VÝHRA"}
+                      <strong style={{ display: "block", color: isWinner ? "#FFD700" : "var(--text-primary)", fontSize: "1rem" }}>
+                        {g.title} {isWinner && "🏆"}
                       </strong>
-                      <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                        Zakoupeno {g.tickets_bought} ticketů
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.2rem" }}>
+                        <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                          {g.tickets_bought} ticketů
+                        </span>
+                        {isWinner && g.is_sent && (
+                          <span style={{ fontSize: "0.7rem", color: "#4CAF50", background: "rgba(76, 175, 80, 0.1)", padding: "0.1rem 0.5rem", borderRadius: "4px", border: "1px solid rgba(76, 175, 80, 0.2)", fontWeight: "600" }}>DORUČENO</span>
+                        )}
+                        {isWinner && !g.is_sent && (
+                          <span style={{ fontSize: "0.7rem", color: "var(--accent-secondary)", background: "rgba(255,255,255,0.05)", padding: "0.1rem 0.5rem", borderRadius: "4px", border: "1px solid var(--glass-border)", fontWeight: "600" }}>ČEKÁ</span>
+                        )}
+                      </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "0.9rem", color: isEnded ? (isWinner ? "#FFD700" : "#ff4444") : "var(--accent-secondary)" }}>
-                        {isEnded ? (isWinner ? "Vyhrál jsi!" : "Nevyhrál jsi") : "Probíhá..."}
+                      <div style={{ fontSize: "0.9rem", fontWeight: "700", color: isEnded ? (isWinner ? "#FFD700" : "#ff4444") : "var(--accent-secondary)" }}>
+                        {isEnded ? (isWinner ? "VÝHRA" : "Nevyhrál jsi") : "Probíhá..."}
                       </div>
                       <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                         {new Date(g.first_ticket_at.replace(" ", "T") + "Z").toLocaleDateString("cs-CZ")}
