@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSetting, getDb, triggerCodeDrop } from '@/lib/db';
+import { getSetting, getDb, triggerCodeDrop, deactivateExpiredCodes } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +20,9 @@ export async function GET() {
         lastCodeDrop = result.lastCodeDrop;
       }
     }
+
+    // Auto-deactivate codes older than 60 seconds
+    await deactivateExpiredCodes(60000);
 
     // Fetch the latest active code to display it if a drop just happened
     const db = await getDb();

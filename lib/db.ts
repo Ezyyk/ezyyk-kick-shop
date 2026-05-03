@@ -216,6 +216,31 @@ export async function deactivateOldCodes() {
   await db.run('UPDATE redeem_codes SET is_used = 1 WHERE is_used = 0');
 }
 
+/**
+ * Auto-deactivate codes that are older than the specified duration (in ms) and still unused.
+ * This ensures codes expire after 1 minute if nobody redeems them.
+ */
+export async function deactivateExpiredCodes(maxAgeMs: number = 60000) {
+  const db = await getDb();
+  // Get all unused codes
+  const unusedCodes = await db.all('SELECT id, created_at FROM redeem_codes WHERE is_used = 0');
+  
+  let deactivated = 0;
+  for (const code of unusedCodes) {
+    // created_at is stored as datetime string in UTC
+    const createdAt = new Date(code.created_at + 'Z').getTime();
+    if (Date.now() - createdAt > maxAgeMs) {
+      await db.run('UPDATE redeem_codes SET is_used = 1 WHERE id = ?', code.id);
+      deactivated++;
+    }
+  }
+  
+  if (deactivated > 0) {
+    console.log(`[DB] Auto-deactivated ${deactivated} expired code(s)`);
+  }
+  return deactivated;
+}
+
 export async function triggerCodeDrop(points: number = 10) {
   const db = await getDb();
   
