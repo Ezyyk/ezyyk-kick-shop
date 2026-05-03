@@ -3,160 +3,164 @@
   bottom: 24px;
   right: 24px;
   z-index: 999999;
-  max-width: 380px;
+  max-width: 440px;
   width: calc(100% - 48px);
-  animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideIn {
   from {
-    transform: translateY(40px) scale(0.95);
+    transform: translateY(30px);
     opacity: 0;
   }
   to {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 .consentCard {
-  background: rgba(9, 9, 14, 0.7);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 28px 24px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(138, 43, 226, 0.1);
-  position: relative;
-  overflow: hidden;
+  background: #1a1a1f;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.consentCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at top left, rgba(138, 43, 226, 0.2) 0%, transparent 70%);
-  pointer-events: none;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.topSection {
+.iconTitleWrapper {
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-  margin-bottom: 4px;
+  gap: 16px;
 }
 
 .iconContainer {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, rgba(138, 43, 226, 0.25), rgba(138, 43, 226, 0.05));
-  border: 1px solid rgba(138, 43, 226, 0.4);
-  border-radius: 14px;
-  color: #e9d5ff;
-  box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3);
+  width: 44px;
+  height: 44px;
+  background: rgba(138, 43, 226, 0.15);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  border-radius: 12px;
+  color: #c084fc;
 }
 
 .iconContainer svg {
-  width: 24px;
-  height: 24px;
-  filter: drop-shadow(0 0 8px rgba(138, 43, 226, 0.8));
+  width: 22px;
+  height: 22px;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .title {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.shieldIcon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
 }
 
 .description {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.6;
   color: #a1a1aa;
   margin: 0;
-  font-weight: 400;
 }
 
-.actions {
+.privacyLink {
+  color: #c084fc;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.privacyLink:hover {
+  color: #d8b4fe;
+  text-decoration: underline;
+}
+
+.buttonGroup {
   display: flex;
-  flex-direction: column;
   gap: 12px;
   margin-top: 8px;
 }
 
 .acceptButton {
-  width: 100%;
-  background: linear-gradient(135deg, #9333ea, #a855f7);
+  flex: 1;
+  background: #a855f7;
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   border-radius: 12px;
   padding: 12px 16px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
+  transition: all 0.2s ease;
 }
 
 .acceptButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(147, 51, 234, 0.6);
-  background: linear-gradient(135deg, #a855f7, #c084fc);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.acceptButton:active {
-  transform: translateY(0);
+  background: #c084fc;
 }
 
 .secondaryButton {
-  width: 100%;
-  background: transparent;
-  color: #a1a1aa;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  flex: 1;
+  background: #27272a;
+  color: #ffffff;
+  border: none;
   border-radius: 12px;
-  padding: 10px 16px;
-  font-weight: 500;
+  padding: 12px 16px;
+  font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .secondaryButton:hover {
-  background: rgba(255, 255, 255, 0.03);
-  color: #e4e4e7;
-  border-color: rgba(255, 255, 255, 0.1);
+  background: #3f3f46;
 }
 
 .footer {
   text-align: center;
   font-size: 0.75rem;
   color: #71717a;
-  margin-top: 8px;
-  line-height: 1.4;
+  margin-top: 4px;
 }
 
 .footerLink {
-  color: #a855f7;
-  text-decoration: none;
-  font-weight: 500;
+  color: #71717a;
+  text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 .footerLink:hover {
-  color: #d8b4fe;
-  text-decoration: underline;
+  color: #a1a1aa;
 }
 
 @media (max-width: 480px) {
@@ -166,7 +170,7 @@
     width: calc(100% - 32px);
   }
   
-  .consentCard {
-    padding: 24px 20px;
+  .buttonGroup {
+    flex-direction: column;
   }
 }

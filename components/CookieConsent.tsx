@@ -34,19 +34,40 @@ export default function CookieConsent() {
   return (
     <div className={styles.consentWrapper}>
       <div className={styles.consentCard}>
-        <div className={styles.topSection}>
-          <div className={styles.iconContainer}>
-            <GemIcon />
+        
+        <div className={styles.header}>
+          <div className={styles.iconTitleWrapper}>
+            <div className={styles.iconContainer}>
+              <GemIcon />
+            </div>
+            <div className={styles.titleGroup}>
+              <h3 className={styles.title}>Soukromí a Cookies</h3>
+              <div className={styles.subtitle}>
+                <svg
+                  className={styles.shieldIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <span>Chráníme vaše data</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <h3 className={styles.title}>Vylepšujeme Ezyyk pomocí Cookies</h3>
-        
         <p className={styles.description}>
-          Abychom vám mohli nabídnout co nejlepší zážitek, používáme cookies. Některé jsou nutné k tomu, aby web vůbec běžel, a další nám pomáhají analyzovat návštěvnost. Žádná vaše data nikomu neprodáváme!
+          Používáme nezbytné cookies pro správné fungování webu a analytické cookies ke zlepšení vašeho zážitku. Žádná osobní data neprodáváme ani nesdílíme s třetími stranami.{" "}
+          <Link href="/privacy" className={styles.privacyLink}>
+            Privacy Policy
+          </Link>
         </p>
 
-        <div className={styles.actions}>
+        <div className={styles.buttonGroup}>
           <button className={styles.acceptButton} onClick={handleAcceptAll}>
             Jasně, beru vše!
           </button>
@@ -57,14 +78,15 @@ export default function CookieConsent() {
 
         <div className={styles.footer}>
           Přečtěte si naše{" "}
-          <Link href="/privacy" className={styles.footerLink}>
-            Privacy Policy
-          </Link>{" "}
-          a{" "}
           <Link href="/terms" className={styles.footerLink}>
             Terms of Service
+          </Link>
+          {" "}a{" "}
+          <Link href="/privacy" className={styles.footerLink}>
+            Privacy Policy
           </Link>.
         </div>
+
       </div>
     </div>
   );
