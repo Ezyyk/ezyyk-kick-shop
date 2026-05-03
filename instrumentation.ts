@@ -1,19 +1,28 @@
 /**
  * Next.js Instrumentation - runs once when the server starts.
  * Sets up a 5-minute interval to award points to active chatters.
+ * This serves as a BACKUP to Vercel Cron Jobs (which are more reliable).
  */
 export async function register() {
   // Only run on the server (not during build or in edge runtime)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    console.log('[BOT] Starting background point ticker (every 5 minutes)...');
+    console.log('[BOT] Starting background point ticker...');
     
-    const TICK_INTERVAL = 10 * 1000; // 10 seconds
+    const TICK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+    
+    // Determine the correct base URL
+    const getBaseUrl = () => {
+      if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`;
+      }
+      return process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    };
     
     // Start the ticker after a short delay to let the server fully initialize
     setTimeout(() => {
       setInterval(async () => {
         try {
-          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+          const baseUrl = getBaseUrl();
           const token = process.env.BOT_CRON_SECRET || process.env.ADMIN_PASSWORD;
           
           const response = await fetch(`${baseUrl}/api/bot-tick`, {
@@ -36,7 +45,7 @@ export async function register() {
         }
       }, TICK_INTERVAL);
       
-      console.log('[BOT] ✅ Point ticker started');
+      console.log('[BOT] ✅ Point ticker started (backup to Vercel Cron)');
     }, 10000); // 10s delay after server start
   }
 }
