@@ -216,6 +216,37 @@ export async function deactivateOldCodes() {
   await db.run('UPDATE redeem_codes SET is_used = 1 WHERE is_used = 0');
 }
 
+export async function triggerCodeDrop(points: number = 10) {
+  const db = await getDb();
+  
+  // Double check if a drop happened very recently (last 10 seconds) to prevent races
+  const lastDropStr = await getSetting('last_code_drop_at', '0');
+  const lastDrop = parseInt(lastDropStr) || 0;
+  if (Date.now() - lastDrop < 10000) return null;
+
+  // 1. Generate code
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 5; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  // 2. Deactivate old codes
+  await deactivateOldCodes();
+  
+  // 3. Create new code
+  await db.run('INSERT INTO redeem_codes (code, points) VALUES (?, ?)', code, points);
+  
+  // 4. Update last_code_drop_at
+  const now = Date.now();
+  await setSetting('last_code_drop_at', String(now));
+  
+  // 5. Log event
+  await logBotEvent('code.drop', 'system-auto', null, 0, `Code: ${code}`);
+  
+  return { code, lastCodeDrop: now };
+}
+
 export async function redeemCode(code: string, userId: string) {
   const db = await getDb();
   const existingCode = await db.get('SELECT * FROM redeem_codes WHERE code = ? AND is_used = 0', code);

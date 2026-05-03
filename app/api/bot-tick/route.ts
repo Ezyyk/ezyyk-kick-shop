@@ -9,6 +9,7 @@ import {
   checkAndDrawGiveaways,
   getSetting,
   setSetting,
+  triggerCodeDrop,
 } from '@/lib/db';
 import { sendChatMessage, checkLiveStatus } from '@/lib/kick-api';
 
@@ -85,16 +86,11 @@ export async function POST(request: Request) {
       const now = Date.now();
 
       if (now - lastCodeDrop >= CODE_DROP_INTERVAL_MS - 5000) {
-        // Deactivate any previous unredeemed codes first
-        await deactivateOldCodes();
-
-        const code = generateRandomCode(5);
-        await createRedeemCode(code, CODE_DROP_POINTS);
-        await setSetting('last_code_drop_at', String(now));
-        
-        await logBotEvent('code.drop', 'system', null, 0, `Code: ${code}`);
-        codeDropped = true;
-        console.log(`[BOT-TICK] 🎁 Code dropped: ${code}`);
+        const result = await triggerCodeDrop(CODE_DROP_POINTS);
+        if (result) {
+          codeDropped = true;
+          console.log(`[BOT-TICK] 🎁 Code dropped: ${result.code}`);
+        }
       }
     }
     
