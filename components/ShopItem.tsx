@@ -17,7 +17,7 @@ interface ShopItemProps {
   onBuy: (id: string, cost: number, userMessage?: string) => void;
 }
 
-export default function ShopItem({ 
+function ShopItemInner({ 
   id, 
   title, 
   description, 
@@ -135,3 +135,5 @@ export default function ShopItem({
     </>
   );
 }
+
+export default React.memo(ShopItemInner);

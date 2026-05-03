@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSession, signIn } from "next-auth/react";
 import ShopItem from "@/components/ShopItem";
 import Header from "@/components/Header";
@@ -54,7 +54,7 @@ export default function ShopPage() {
     }
   };
 
-  const handleBuy = async (id: string, cost: number, userMessage?: string) => {
+  const handleBuy = useCallback(async (id: string, cost: number, userMessage?: string) => {
     if (!session) return;
     setMessage("");
 
@@ -96,7 +96,7 @@ export default function ShopPage() {
     }
     
     setTimeout(() => setMessage(""), 5000);
-  };
+  }, [session, points, shopItems]);
 
 
   const currentItems = shopItems

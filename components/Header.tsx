@@ -111,13 +111,15 @@ export default function Header() {
     }
   };
 
+  const pointsRef = React.useRef(points);
+  pointsRef.current = points;
 
   useEffect(() => {
     fetchPoints();
     
     const handleUpdate = (e: any) => {
       if (e.detail?.points !== undefined) {
-        if (e.detail.points < points) {
+        if (e.detail.points < pointsRef.current) {
           setIsFlashing(true);
           setTimeout(() => setIsFlashing(false), 600);
         }
@@ -127,7 +129,7 @@ export default function Header() {
 
     window.addEventListener('points-update', handleUpdate);
     return () => window.removeEventListener('points-update', handleUpdate);
-  }, [session, points]);
+  }, [session]);
 
   // Close mobile menu on route change
   useEffect(() => {

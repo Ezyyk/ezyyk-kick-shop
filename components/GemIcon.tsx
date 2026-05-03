@@ -73,18 +73,14 @@ export default function GemIcon({ size = 18, className = "", glow = true }: GemI
           stroke="white"
           strokeWidth="1"
           strokeLinecap="round"
-          opacity="0.8"
-        >
-          <animate attributeName="opacity" values="0.8;0.2;0.8" dur="3s" repeatCount="indefinite" />
-        </path>
+          opacity="0.6"
+        />
 
-        {/* Moving Shimmer Facet */}
+        {/* Shimmer Facet */}
         <path
           d="M6 3L12 9L18 3"
-          fill="rgba(255,255,255,0.1)"
-        >
-          <animate attributeName="fill" values="rgba(255,255,255,0.1);rgba(255,255,255,0.4);rgba(255,255,255,0.1)" dur="2s" repeatCount="indefinite" />
-        </path>
+          fill="rgba(255,255,255,0.15)"
+        />
 
         <defs>
           <linearGradient id="gem_grad" x1="2" y1="3" x2="22" y2="21" gradientUnits="userSpaceOnUse">
@@ -95,24 +91,7 @@ export default function GemIcon({ size = 18, className = "", glow = true }: GemI
         </defs>
       </svg>
 
-      
-      {glow && (
-        <div 
-          className="gem-pulse"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: "50%",
-            background: "rgba(0, 229, 255, 0.2)",
-            filter: "blur(8px)",
-            zIndex: -1,
-            animation: "gem-pulse 2s infinite ease-in-out"
-          }}
-        />
-      )}
+
     </div>
   );
 }
