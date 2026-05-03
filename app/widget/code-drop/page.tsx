@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Gift, Clock } from "lucide-react";
 
 export default function CodeDropWidget() {
@@ -7,6 +7,7 @@ export default function CodeDropWidget() {
   const [latestCode, setLatestCode] = useState<string | null>(null);
   const [isLive, setIsLive] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [serverOffset, setServerOffset] = useState<number>(0);
   
   // State for showing the dropped code
   const [showCode, setShowCode] = useState<boolean>(false);
@@ -14,6 +15,9 @@ export default function CodeDropWidget() {
   
   const CODE_DROP_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
   const DISPLAY_CODE_DURATION_MS = 60 * 1000; // Show code for 60 seconds after drop
+
+  // Use a ref to keep track of the current lastCodeDrop for the fetchData closure
+  const lastCodeDropRef = useRef(0);
 
   // Poll API for updates every 5 seconds
   useEffect(() => {
@@ -24,18 +28,27 @@ export default function CodeDropWidget() {
           const data = await res.json();
           setIsLive(data.isLive);
           
+          // Synchronize time with server to handle client/server clock drift
+          const now = Date.now();
+          const offset = data.serverTime - now;
+          setServerOffset(offset);
+          
+          const currentLastDrop = lastCodeDropRef.current;
+          
           // Check if a new code just dropped
-          if (data.lastCodeDrop > lastCodeDrop && lastCodeDrop !== 0) {
+          if (data.lastCodeDrop > currentLastDrop && currentLastDrop !== 0) {
             // New drop detected!
             setLatestCode(data.latestCode);
             setShowCode(true);
             setCodeTimer(DISPLAY_CODE_DURATION_MS);
-          } else if (lastCodeDrop === 0) {
+          } else if (currentLastDrop === 0) {
             // Initial load
             setLatestCode(data.latestCode);
             
             // If the code was dropped within the display duration, show it
-            const timeSinceDrop = Date.now() - data.lastCodeDrop;
+            const adjustedNow = Date.now() + offset;
+            const timeSinceDrop = adjustedNow - data.lastCodeDrop;
+            
             if (timeSinceDrop < DISPLAY_CODE_DURATION_MS && timeSinceDrop >= 0) {
               setShowCode(true);
               setCodeTimer(DISPLAY_CODE_DURATION_MS - timeSinceDrop);
@@ -43,6 +56,7 @@ export default function CodeDropWidget() {
           }
           
           setLastCodeDrop(data.lastCodeDrop);
+          lastCodeDropRef.current = data.lastCodeDrop;
         }
       } catch (error) {
         console.error("Error fetching widget data:", error);
@@ -52,12 +66,12 @@ export default function CodeDropWidget() {
     fetchData();
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, [lastCodeDrop]);
+  }, []);
 
   // Handle countdown timers locally
   useEffect(() => {
     const timer = setInterval(() => {
-      const now = Date.now();
+      const now = Date.now() + serverOffset;
       
       // Handle the code display timer
       if (showCode) {
@@ -79,18 +93,19 @@ export default function CodeDropWidget() {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [lastCodeDrop, showCode]);
+  }, [lastCodeDrop, showCode, serverOffset]);
 
   // Format time for display (MM:SS)
   const formatTime = (ms: number) => {
+    if (ms <= 0 && lastCodeDrop > 0) return "BRZY...";
+    
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // If not live, display a waiting state (or be completely invisible if preferred, 
-  // but usually streamers want to see something if the bot is off)
+  // If not live, display a waiting state
   if (!isLive) {
     return (
       <div className="obs-widget-container glass-panel">

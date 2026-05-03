@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       const lastCodeDrop = parseInt(lastCodeDropStr) || 0;
       const now = Date.now();
 
-      if (now - lastCodeDrop >= CODE_DROP_INTERVAL_MS) {
+      if (now - lastCodeDrop >= CODE_DROP_INTERVAL_MS - 5000) {
         // Deactivate any previous unredeemed codes first
         await deactivateOldCodes();
 
