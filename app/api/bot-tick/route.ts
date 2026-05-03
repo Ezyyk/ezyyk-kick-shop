@@ -92,12 +92,6 @@ export async function POST(request: Request) {
         await createRedeemCode(code, CODE_DROP_POINTS);
         await setSetting('last_code_drop_at', String(now));
         
-        const chatroomId = await getSetting('last_chatroom_id');
-        await sendChatMessage(
-          `CODE DROP: [ ${code} ] -> ezyyk.com/codes`,
-          undefined,
-          chatroomId || undefined
-        );
         await logBotEvent('code.drop', 'system', null, 0, `Code: ${code}`);
         codeDropped = true;
         console.log(`[BOT-TICK] 🎁 Code dropped: ${code}`);

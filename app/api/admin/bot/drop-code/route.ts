@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createRedeemCode, deactivateOldCodes, getSetting, logBotEvent } from '@/lib/db';
-import { sendChatMessage } from '@/lib/kick-api';
+import { createRedeemCode, deactivateOldCodes, setSetting, logBotEvent } from '@/lib/db';
 
 function generateRandomCode(length: number = 5) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -33,20 +32,9 @@ export async function POST(request: Request) {
 
     const code = generateRandomCode(5);
     await createRedeemCode(code, 10);
-    
-    const chatroomId = await getSetting('last_chatroom_id');
-    const success = await sendChatMessage(
-      `CODE DROP: [ ${code} ] -> ezyyk.com/codes`,
-      undefined,
-      chatroomId || undefined
-    );
-
-    if (success) {
-      await logBotEvent('code.drop', 'admin', null, 0, `Manual Code: ${code}`);
-      return NextResponse.json({ success: true, code });
-    } else {
-      return NextResponse.json({ error: 'Nepodařilo se odeslat zprávu do chatu' }, { status: 500 });
-    }
+    await setSetting('last_code_drop_at', String(Date.now()));
+    await logBotEvent('code.drop', 'admin', null, 0, `Manual Code: ${code}`);
+    return NextResponse.json({ success: true, code });
   } catch (error) {
     console.error('[ADMIN-BOT] Error dropping code:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
