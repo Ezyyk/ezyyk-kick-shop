@@ -58,7 +58,7 @@ interface AdminGiveaway {
   ticket_holders: { user_name: string; count: number }[];
 }
 
-type Tab = "purchases" | "users" | "items" | "giveaways" | "bot" | "ticket_history";
+type Tab = "purchases" | "users" | "items" | "giveaways" | "bot" | "ticket_history" | "point_history";
 
 // ========== BOT TAB COMPONENT ==========
 function BotTab() {
@@ -372,6 +372,7 @@ export default function AdminPage() {
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [giveaways, setGiveaways] = useState<AdminGiveaway[]>([]);
   const [ticketHistory, setTicketHistory] = useState<any[]>([]);
+  const [pointHistory, setPointHistory] = useState<any[]>([]);
 
   // New / Edit item form
   const [newItem, setNewItem] = useState({ id: "", title: "", description: "", cost: 0, imageUrl: "", category: "other", stock: -1, imageScale: 1.0, requiresMessage: false });
@@ -430,12 +431,13 @@ export default function AdminPage() {
 
   const loadData = async () => {
     try {
-      const [usersRes, purchasesRes, itemsRes, gwRes, ticketsRes] = await Promise.all([
+      const [usersRes, purchasesRes, itemsRes, gwRes, ticketsRes, pointHistoryRes] = await Promise.all([
         fetch("/api/admin/users"),
         fetch("/api/admin/purchases"),
         fetch("/api/admin/items"),
         fetch("/api/admin/giveaways"),
         fetch("/api/admin/giveaways/tickets"),
+        fetch("/api/admin/bot/point-distributions"),
       ]);
       if (usersRes.ok) {
         const data = await usersRes.json();
@@ -456,6 +458,10 @@ export default function AdminPage() {
       if (ticketsRes.ok) {
         const data = await ticketsRes.json();
         setTicketHistory(data);
+      }
+      if (pointHistoryRes.ok) {
+        const data = await pointHistoryRes.json();
+        setPointHistory(data.history || []);
       }
     } catch (e) {
       console.error("Chyba při načítání dat", e);
@@ -742,6 +748,12 @@ export default function AdminPage() {
             onClick={() => setActiveTab("bot")}
           >
             <MessageSquare size={16} /> Bot & Kódy
+          </button>
+          <button
+            className={`admin-tab ${activeTab === "point_history" ? "active" : ""}`}
+            onClick={() => setActiveTab("point_history")}
+          >
+            <Gem size={16} /> Historie bodů
           </button>
         </div>
 
@@ -1488,6 +1500,64 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* POINT HISTORY TAB */}
+        {activeTab === "point_history" && (
+          <div className="admin-panel">
+            {pointHistory.length === 0 ? (
+              <div className="admin-empty">Žádná historie bodů</div>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Datum</th>
+                      <th>Uživatelé (body)</th>
+                      <th>Celkem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pointHistory.map((ph, i) => {
+                      let usersList = [];
+                      try {
+                        usersList = JSON.parse(ph.details);
+                      } catch (e) {}
+                      
+                      return (
+                        <tr key={ph.id || i}>
+                          <td className="admin-td-date">
+                            {new Date(ph.created_at.replace(" ", "T") + "Z").toLocaleString("cs-CZ")}
+                          </td>
+                          <td>
+                            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", maxWidth: "800px" }}>
+                              {usersList.map((u: any, j: number) => (
+                                <span key={j} style={{ 
+                                  background: "rgba(255,255,255,0.05)", 
+                                  padding: "0.2rem 0.5rem", 
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  fontSize: "0.8rem",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "0.3rem"
+                                }}>
+                                  <span style={{ color: "#fff", fontWeight: 500 }}>{u.username}</span>
+                                  <span style={{ color: "var(--accent-primary)", fontWeight: 700 }}>{u.points}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td style={{ fontWeight: "bold", color: "var(--accent-primary)" }}>
+                            {ph.total_points}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -156,6 +156,16 @@ export async function getDb() {
     );
   `);
 
+  await wrapper.exec(`
+    CREATE TABLE IF NOT EXISTS point_distributions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      created_at DATETIME DEFAULT (datetime('now')),
+      user_count INTEGER,
+      total_points INTEGER,
+      details TEXT
+    );
+  `);
+
   // Migrations
   try {
     await wrapper.exec('ALTER TABLE shop_items ADD COLUMN stock INTEGER DEFAULT -1');
@@ -278,10 +288,16 @@ export async function redeemCode(code: string, userId: string) {
   
   if (!existingCode) return { success: false, message: 'Kód je neplatný nebo již byl použit.' };
   
-  await db.run(
-    'UPDATE redeem_codes SET is_used = 1, used_by_user_id = ?, used_at = datetime(\'now\') WHERE code = ?',
+  // Use atomic update to prevent race conditions
+  const result = await db.run(
+    'UPDATE redeem_codes SET is_used = 1, used_by_user_id = ?, used_at = datetime(\'now\') WHERE code = ? AND is_used = 0',
     userId, code
   );
+  
+  // If no rows were changed, someone else redeemed it exactly in the same millisecond
+  if (result.changes === 0) {
+    return { success: false, message: 'Někdo jiný tě těsně předběhl!' };
+  }
   
   await addPoints(userId, existingCode.points);
   
@@ -617,4 +633,19 @@ export async function getAllTicketHistory() {
     ORDER BY gt.purchased_at DESC
     LIMIT 500
   `);
+}
+
+export async function logPointDistribution(users: {username: string, points: number}[]) {
+  const db = await getDb();
+  const totalPoints = users.reduce((acc, u) => acc + u.points, 0);
+  const details = JSON.stringify(users);
+  await db.run(
+    'INSERT INTO point_distributions (user_count, total_points, details) VALUES (?, ?, ?)',
+    users.length, totalPoints, details
+  );
+}
+
+export async function getPointDistributions(limit: number = 50) {
+  const db = await getDb();
+  return await db.all('SELECT * FROM point_distributions ORDER BY created_at DESC LIMIT ?', limit);
 }

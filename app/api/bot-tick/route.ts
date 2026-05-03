@@ -8,6 +8,7 @@ import {
   getSetting,
   setSetting,
   triggerCodeDrop,
+  logPointDistribution,
 } from '@/lib/db';
 import { checkLiveStatus } from '@/lib/kick-api';
 
@@ -32,10 +33,11 @@ async function runTick() {
 
   // ===== 1. AWARD CHAT ACTIVITY POINTS (only when live) =====
   let totalAwarded = 0;
+  const awardedUsers: {username: string, points: number}[] = [];
   
   if (isLive) {
     const activeChatters = await getActiveChattersDueForPoints();
-
+    
     for (const chatter of activeChatters) {
       const points = chatter.is_sub ? CHAT_POINTS_SUB : CHAT_POINTS_NORMAL;
       
@@ -49,10 +51,12 @@ async function runTick() {
         chatter.is_sub ? 'sub bonus (10 pts)' : 'regular (5 pts)'
       );
       
+      awardedUsers.push({ username: chatter.username, points });
       totalAwarded++;
     }
 
     if (totalAwarded > 0) {
+      await logPointDistribution(awardedUsers);
       console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
     }
   }
