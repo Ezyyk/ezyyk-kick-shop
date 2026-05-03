@@ -6,8 +6,6 @@ import Link from "next/link";
 import { formatPoints } from "@/lib/format";
 import GemIcon from "@/components/GemIcon";
 
-
-
 interface LeaderboardUser {
   name: string;
   points: number;
@@ -53,6 +51,16 @@ export default function LeaderboardPage() {
     return "";
   };
 
+  const others = users.slice(3);
+  const topThree = users.slice(0, 3);
+  
+  // Podium order: 2nd, 1st, 3rd
+  const podiumOrder = [
+    topThree[1] ? { user: topThree[1], rank: 2 } : null,
+    topThree[0] ? { user: topThree[0], rank: 1 } : null,
+    topThree[2] ? { user: topThree[2], rank: 3 } : null,
+  ].filter(Boolean) as { user: LeaderboardUser; rank: number }[];
+
   return (
     <div className="container">
       <Header />
@@ -69,15 +77,49 @@ export default function LeaderboardPage() {
         </section>
 
         <section className="lb-section" style={{ width: "100%" }}>
-          <div className="lb-table glass-panel">
-            {loading ? (
-              <div className="lb-loading">Načítání žebříčku...</div>
-            ) : users.length === 0 ? (
-              <div className="lb-empty">Žádní uživatelé v žebříčku</div>
-            ) : (
-              <>
-                {users.map((user, index) => {
-                  const rank = (page - 1) * 20 + index + 1;
+          {loading ? (
+            <div className="lb-loading">Načítání žebříčku...</div>
+          ) : users.length === 0 ? (
+            <div className="lb-empty">Žádní uživatelé v žebříčku</div>
+          ) : (
+            <>
+              {/* PODIUM (Only on first page) */}
+              {page === 1 && topThree.length > 0 && (
+                <div className="lb-podium">
+                  {podiumOrder.map((item) => (
+                    <Link 
+                      href={`/profile/${item.user.name}`} 
+                      key={item.user.name + item.rank} 
+                      className={`podium-item podium-item-${item.rank}`}
+                    >
+                      {item.rank === 1 && <Crown size={32} className="podium-crown" />}
+                      <div className="podium-avatar">
+                        {item.user.avatar_url ? (
+                          <img src={item.user.avatar_url} alt={item.user.name} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--accent-primary)", color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+                            {item.user.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="podium-rank-box glass-panel">
+                        <div className="podium-name">{item.user.name}</div>
+                        <div className="podium-points">
+                          <GemIcon size={18} />
+                          <span>{formatPoints(item.user.points)}</span>
+                        </div>
+                        <div style={{ marginTop: "auto", fontWeight: "800", fontSize: "2rem", opacity: 0.2 }}>
+                          {item.rank}.
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              <div className="lb-table glass-panel">
+                {(page === 1 ? others : users).map((user, index) => {
+                  const rank = (page - 1) * 20 + (page === 1 ? index + 4 : index + 1);
                   return (
                     <Link href={`/profile/${user.name}`} key={user.name + rank} className={`lb-row ${getRankClass(rank)}`} style={{ textDecoration: "none", cursor: "pointer" }}>
                       <div className="lb-rank">
@@ -93,16 +135,14 @@ export default function LeaderboardPage() {
                       <div className="lb-name">{user.name}</div>
                       <div className="lb-points">
                         <GemIcon size={16} />
-
                         <span>{formatPoints(user.points)}</span>
-
                       </div>
                     </Link>
                   );
                 })}
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
 
           {/* PAGINATION */}
           {totalPages > 1 && (
