@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { User as UserIcon, Gem, ShoppingBag, Gift, Calendar, ExternalLink, Trophy, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -66,7 +65,6 @@ export default function PublicProfilePage() {
             </div>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -217,7 +215,6 @@ export default function PublicProfilePage() {
         </div>
       </main>
 
-      <Footer />
       <style jsx>{`
         .loading-spinner {
           width: 50px;
