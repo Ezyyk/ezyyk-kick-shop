@@ -54,11 +54,6 @@ export default function ShopItem({
       <div className={`glass-panel ${styles.item}`}>
         <div className={styles.header}>
           <h3 className={styles.title}>{title}</h3>
-          {description && (
-            <div className={styles.subtitleBadge}>
-              {description}
-            </div>
-          )}
         </div>
         
         <div className={styles.content}>
@@ -77,17 +72,23 @@ export default function ShopItem({
             </div>
           )}
         </div>
+
+        {description && (
+          <div className={styles.subtitleBadge}>
+            {description}
+          </div>
+        )}
         
         <div className={styles.footer}>
           <div className={styles.priceSection}>
             <div className={styles.costBox}>
               <div className={styles.cost}>
-                <GemIcon size={18} />
+                <GemIcon size={24} />
                 <span>{formatPoints(cost)}</span>
               </div>
               {stock !== -1 && (
                 <div className={styles.stockBadge}>
-                  {isSoldOut ? "VYPRODÁNO" : `${stock} KS SKLADEM`}
+                  ({isSoldOut ? "0" : stock} in stock)
                 </div>
               )}
             </div>
@@ -100,7 +101,7 @@ export default function ShopItem({
               variant={isSoldOut ? "disabled" : (canAfford ? "primary" : "disabled")}
               className={styles.buyButton}
             >
-              {isSoldOut ? "Vyprodáno" : (canAfford ? "Koupit" : "Nedostatek bodů")}
+              {isSoldOut ? "Sold Out" : (canAfford ? "Koupit" : "Nedostatek bodů")}
             </Button>
           </div>
         </div>
