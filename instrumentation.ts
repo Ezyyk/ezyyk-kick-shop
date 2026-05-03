@@ -7,7 +7,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     console.log('[BOT] Starting background point ticker (every 5 minutes)...');
     
-    const TICK_INTERVAL = 30 * 1000; // 30 seconds
+    const TICK_INTERVAL = 10 * 1000; // 10 seconds
     
     // Start the ticker after a short delay to let the server fully initialize
     setTimeout(() => {

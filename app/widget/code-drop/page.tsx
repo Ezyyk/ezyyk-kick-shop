@@ -45,14 +45,17 @@ export default function CodeDropWidget() {
             // Initial load
             setLatestCode(data.latestCode);
             
-            // If the code was dropped within the display duration, show it
+            // If the code was dropped within the display duration AND not used, show it
             const adjustedNow = Date.now() + offset;
             const timeSinceDrop = adjustedNow - data.lastCodeDrop;
             
-            if (timeSinceDrop < DISPLAY_CODE_DURATION_MS && timeSinceDrop >= 0) {
+            if (timeSinceDrop < DISPLAY_CODE_DURATION_MS && timeSinceDrop >= 0 && !data.isUsed) {
               setShowCode(true);
               setCodeTimer(DISPLAY_CODE_DURATION_MS - timeSinceDrop);
             }
+          } else if (data.isUsed) {
+            // If currently showing but now it's used, hide it instantly
+            setShowCode(false);
           }
           
           setLastCodeDrop(data.lastCodeDrop);
