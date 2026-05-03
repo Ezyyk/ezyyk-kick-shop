@@ -38,25 +38,6 @@ export default function CookieConsent() {
           <div className={styles.iconContainer}>
             <GemIcon />
           </div>
-          <button
-            className={styles.closeButton}
-            onClick={handleEssentialOnly}
-            aria-label="Zavřít"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
         </div>
 
         <h3 className={styles.title}>Vylepšujeme Ezyyk pomocí Cookies</h3>
@@ -77,11 +58,11 @@ export default function CookieConsent() {
         <div className={styles.footer}>
           Přečtěte si naše{" "}
           <Link href="/privacy" className={styles.footerLink}>
-            Zásady soukromí
+            Privacy Policy
           </Link>{" "}
           a{" "}
           <Link href="/terms" className={styles.footerLink}>
-            Podmínky
+            Terms of Service
           </Link>.
         </div>
       </div>
