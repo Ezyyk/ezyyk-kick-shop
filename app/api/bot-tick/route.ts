@@ -54,8 +54,6 @@ async function runTick() {
       awardedUsers.push({ username: chatter.username, points });
       totalAwarded++;
     }
-
-    }
   }
 
   // Always log distribution attempts (even if 0 users or not live)
