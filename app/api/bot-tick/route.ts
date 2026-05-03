@@ -56,8 +56,10 @@ async function runTick() {
     }
   }
 
-  // Always log distribution attempts (even if 0 users or not live)
-  await logPointDistribution(awardedUsers);
+  // Log distribution attempts only when live to avoid spamming the history with "0" when offline
+  if (isLive) {
+    await logPointDistribution(awardedUsers);
+  }
   
   if (totalAwarded > 0) {
     console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
