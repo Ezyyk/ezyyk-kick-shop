@@ -2,7 +2,7 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 380px;
+  width: 285px;
   aspect-ratio: 16 / 9;
   z-index: 9999;
   border-radius: var(--radius-md);
@@ -66,13 +66,13 @@
 
 @media (max-width: 1024px) {
   .floatingPlayer {
-    width: 320px;
+    width: 240px;
   }
 }
 
 @media (max-width: 768px) {
   .floatingPlayer {
-    width: 260px;
+    width: 195px;
     bottom: 16px;
     right: 16px;
     border-radius: var(--radius-sm);
@@ -81,7 +81,7 @@
 
 @media (max-width: 480px) {
   .floatingPlayer {
-    width: 200px;
+    width: 150px;
     bottom: 12px;
     right: 12px;
   }
