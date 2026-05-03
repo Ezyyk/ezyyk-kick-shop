@@ -355,7 +355,7 @@ export async function findOrCreateUserByName(name: string) {
 
 export async function addPoints(id: string, points: number) {
   const db = await getDb();
-  await db.run('UPDATE users SET points = points + ?, last_ping = datetime(\'now\') WHERE id = ?', points, id);
+  await db.run('UPDATE users SET points = points + ? WHERE id = ?', points, id);
   return await getUser(id);
 }
 
@@ -363,7 +363,7 @@ export async function addPointsByName(name: string, points: number) {
   const db = await getDb();
   const user = await findOrCreateUserByName(name);
   if (user) {
-    await db.run('UPDATE users SET points = points + ?, last_ping = datetime(\'now\') WHERE name = ?', points, name);
+    await db.run('UPDATE users SET points = points + ? WHERE name = ?', points, name);
   }
   return await getUserByName(name);
 }
@@ -407,6 +407,7 @@ export async function updateChatActivity(username: string, kickUserId: number | 
        is_sub = ?`,
     username, kickUserId, isSub ? 1 : 0, kickUserId, isSub ? 1 : 0
   );
+  await db.run('UPDATE users SET last_ping = datetime(\'now\') WHERE name = ?', username);
 }
 
 export async function getActiveChattersDueForPoints() {

@@ -1529,21 +1529,25 @@ export default function AdminPage() {
                           </td>
                           <td>
                             <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", maxWidth: "800px" }}>
-                              {usersList.map((u: any, j: number) => (
-                                <span key={j} style={{ 
-                                  background: "rgba(255,255,255,0.05)", 
-                                  padding: "0.2rem 0.5rem", 
-                                  borderRadius: "6px",
-                                  border: "1px solid rgba(255,255,255,0.1)",
-                                  fontSize: "0.8rem",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "0.3rem"
-                                }}>
-                                  <span style={{ color: "#fff", fontWeight: 500 }}>{u.username}</span>
-                                  <span style={{ color: "var(--accent-primary)", fontWeight: 700 }}>{u.points}</span>
-                                </span>
-                              ))}
+                              {usersList.length === 0 ? (
+                                <span style={{ opacity: 0.3, fontSize: "0.85rem" }}>Žádní</span>
+                              ) : (
+                                usersList.map((u: any, j: number) => (
+                                  <span key={j} style={{ 
+                                    background: "rgba(255,255,255,0.05)", 
+                                    padding: "0.2rem 0.5rem", 
+                                    borderRadius: "6px",
+                                    border: "1px solid rgba(255,255,255,0.1)",
+                                    fontSize: "0.8rem",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "0.3rem"
+                                  }}>
+                                    <span style={{ color: "#fff", fontWeight: 500 }}>{u.username}</span>
+                                    <span style={{ color: "var(--accent-primary)", fontWeight: 700 }}>{u.points}</span>
+                                  </span>
+                                ))
+                              )}
                             </div>
                           </td>
                           <td style={{ fontWeight: "bold", color: "var(--accent-primary)" }}>

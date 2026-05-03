@@ -55,10 +55,14 @@ async function runTick() {
       totalAwarded++;
     }
 
-    if (totalAwarded > 0) {
-      await logPointDistribution(awardedUsers);
-      console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
     }
+  }
+
+  // Always log distribution attempts (even if 0 users or not live)
+  await logPointDistribution(awardedUsers);
+  
+  if (totalAwarded > 0) {
+    console.log(`[BOT-TICK] ✅ Awarded points to ${totalAwarded} active chatters`);
   }
 
   // ===== 2. CODE DROP LOGIC (every 15 minutes when live) =====
